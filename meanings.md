@@ -4,11 +4,11 @@
 - lgID: League ID name as a string (all "WNBA"!!)
 - coachID: as a string
 - tmID: Team ID name as a string
-- stint: ?????
+- stint: A stint is a unique period during which a player is continuously part of a team. If the player leaves and comes back, that’s a new stint.
 - won: Games won in the season
 - lost: Games lost in the season
-- post_wins: ???? (playoffs?)
-- post_losses: ???? (playoffs?)
+- post_wins: Post-season wins
+- post_losses: Post-season losses
 - bioID: as a string
 - pos: 'C' (Center), 'F' (forward) or 'G' (guard) (none, one or two)
 - firstseason: (Always 0???)
@@ -20,12 +20,12 @@
 - birthDate: YYYY-MM-DD
 - deathDate: YYYY-MM-DD or 0000-00-00 if null
 - GP: Games played as uint
-- GS: Games ?????
+- GS: Games started
 - minutes: Minutes played as uint
 - points: as uint
 - oRebounds: offensive rebounds
 - dRebounds: defensive rebounds
-- rebounds: other????? rebounds
+- rebounds: soma dos ofensive e defense rebounds
 - assists: as uint
 - steals: as uint
 - blocks: as uint
@@ -38,10 +38,10 @@
 - threeAttempted: Three-pointers attempted
 - threeMade: Three-pointers made
 - dq: disqualifications
-- PostGP: Post-season?? games played
-- PostGS: Post-season?? ????
-- Post...
-- franchID: ????
+- PostGP: Post-season games played
+- PostGS: Post-season games started
+- Post: Post-season
+- franchID: ???? O identificador da franquia de basquete ????
 - confID: Conference ID ("EA" or "WE")
 - divID: All empty!!!!
 - rank: Placement of the teams in the year
@@ -51,8 +51,8 @@
 - semis: Empty if not made in, else "W" or "L"
 - finals: Empty if not made in, else "W" or "L"
 - name: team name as a string
-- min: minutes???
-- attend: ???
-- arena: Arena name
+- min: Minutos jogados no total da temporada
+- attend: Total de público (torcedores) ao longo da temporada
+- arena: noem da arena
 
 > series_post.csv and teams_post.csv is self-explanatory

@@ -1,0 +1,745 @@
+
+=================================
+awards_players.csv
+Dataset shape: (95, 4)
+
+First few rows:
+     playerID                               award  year  lgID
+0  thompti01w  All-Star Game Most Valuable Player     1  WNBA
+1  leslili01w  All-Star Game Most Valuable Player     2  WNBA
+2  leslili01w  All-Star Game Most Valuable Player     3  WNBA
+3  teaslni01w  All-Star Game Most Valuable Player     4  WNBA
+4  swoopsh01w  All-Star Game Most Valuable Player     6  WNBA
+
+Summary statistics:
+            year
+count  95.000000
+mean    5.789474
+std     2.747900
+min     1.000000
+25%     3.500000
+50%     7.000000
+75%     8.000000
+max    10.000000
+
+Data types and missing values:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 95 entries, 0 to 94
+Data columns (total 4 columns):
+ #   Column    Non-Null Count  Dtype 
+---  ------    --------------  ----- 
+ 0   playerID  95 non-null     object
+ 1   award     95 non-null     object
+ 2   year      95 non-null     int64 
+ 3   lgID      95 non-null     object
+dtypes: int64(1), object(3)
+memory usage: 3.1+ KB
+None
+
+Missing values per column:
+playerID    0
+award       0
+year        0
+lgID        0
+dtype: int64
+
+=================================
+teams.csv
+Dataset shape: (142, 61)
+
+First few rows:
+   year  lgID tmID franchID confID  divID  rank playoff  seeded firstRound  \
+0     9  WNBA  ATL      ATL     EA    NaN     7       N       0        NaN   
+1    10  WNBA  ATL      ATL     EA    NaN     2       Y       0          L   
+2     1  WNBA  CHA      CHA     EA    NaN     8       N       0        NaN   
+3     2  WNBA  CHA      CHA     EA    NaN     4       Y       0          W   
+4     3  WNBA  CHA      CHA     EA    NaN     2       Y       0          L   
+
+  semis finals             name  o_fgm  o_fga  o_ftm  o_fta  o_3pm  o_3pa  \
+0   NaN    NaN    Atlanta Dream    895   2258    542    725    202    598   
+1   NaN    NaN    Atlanta Dream   1089   2428    569    755    114    374   
+2   NaN    NaN  Charlotte Sting    812   1903    431    577    131    386   
+3     W      L  Charlotte Sting    746   1780    410    528    153    428   
+4   NaN    NaN  Charlotte Sting    770   1790    490    663    211    527   
+
+   o_oreb  o_dreb  o_reb  o_asts  o_pf  o_stl  o_to  o_blk  o_pts  d_fgm  \
+0     340     737   1077     492   796    285   593    142   2534   1014   
+1     404     855   1259     547   741    329   590    121   2861    996   
+2     305     630    935     551   713    222   496     90   2186    879   
+3     309     639    948     467   605    217   474    114   2055    732   
+4     302     653    955     496   647    241   408    105   2241    778   
+
+   d_fga  d_ftm  d_fta  d_3pm  d_3pa  d_oreb  d_dreb  d_reb  d_asts  d_pf  \
+0   2254    679    918    172    502     401     864   1265     684   726   
+1   2363    624    807    181    530     353     821   1174     615   700   
+2   1930    533    716    138    423     326     664    990     596   596   
+3   1846    431    562    114    369     344     567    911     443   579   
+4   1807    444    598    133    372     295     620    915     489   600   
+
+   d_stl  d_to  d_blk  d_pts  tmORB  tmDRB  tmTRB  opptmORB  opptmDRB  \
+0    310   561    134   2879      0      0      0         0         0   
+1    347   601    133   2797      0      0      0         0         0   
+2    259   426    123   2429      0      0      0         0         0   
+3    257   447    124   2009      0      0      0         0         0   
+4    208   424    103   2133      0      0      0         0         0   
+
+   opptmTRB  won  lost  GP  homeW  homeL  awayW  awayL  confW  confL   min  \
+0         0    4    30  34      1     16      3     14      2     18  6825   
+1         0   18    16  34     12      5      6     11     10     12  6950   
+2         0    8    24  32      5     11      3     13      5     16  6475   
+3         0   18    14  32     11      5      7      9     15      6  6500   
+4         0   18    14  32     11      5      7      9     12      9  6450   
+
+   attend               arena  
+0  141379       Philips Arena  
+1  120737       Philips Arena  
+2   90963  Charlotte Coliseum  
+3  105525  Charlotte Coliseum  
+4  106670  Charlotte Coliseum  
+
+Summary statistics:
+             year  divID        rank  seeded        o_fgm        o_fga  \
+count  142.000000    0.0  142.000000   142.0   142.000000   142.000000   
+mean     5.302817    NaN    4.084507     0.0   860.387324  2039.683099   
+std      2.917274    NaN    2.095226     0.0    86.998969   176.879707   
+min      1.000000    NaN    1.000000     0.0   647.000000  1740.000000   
+25%      3.000000    NaN    2.000000     0.0   794.500000  1908.500000   
+50%      5.000000    NaN    4.000000     0.0   864.000000  2025.000000   
+75%      8.000000    NaN    6.000000     0.0   915.000000  2177.500000   
+max     10.000000    NaN    8.000000     0.0  1128.000000  2485.000000   
+
+            o_ftm       o_fta       o_3pm       o_3pa      o_oreb      o_dreb  \
+count  142.000000  142.000000  142.000000  142.000000  142.000000  142.000000   
+mean   488.338028  651.366197  157.161972  463.014085  330.500000  730.929577   
+std     70.749372   86.035246   43.736580  116.166119   41.191432   83.378114   
+min    333.000000  469.000000   62.000000  205.000000  242.000000  537.000000   
+25%    435.250000  582.750000  128.250000  389.000000  301.250000  653.250000   
+50%    483.500000  650.000000  157.000000  459.000000  333.500000  724.000000   
+75%    539.000000  716.500000  180.750000  528.000000  356.750000  788.000000   
+max    668.000000  882.000000  283.000000  802.000000  452.000000  931.000000   
+
+             o_reb      o_asts        o_pf       o_stl        o_to  \
+count   142.000000  142.000000  142.000000  142.000000  142.000000   
+mean   1061.429577  520.830986  653.929577  263.112676  510.450704   
+std     105.393245   54.625738   60.978039   34.912880   50.873585   
+min     793.000000  390.000000  467.000000  187.000000  408.000000   
+25%     969.250000  478.500000  617.000000  241.250000  470.500000   
+50%    1069.500000  520.000000  648.000000  261.500000  508.000000   
+75%    1142.000000  556.750000  696.500000  284.000000  540.750000   
+max    1311.000000  683.000000  796.000000  373.000000  637.000000   
+
+            o_blk        o_pts        d_fgm        d_fga       d_ftm  \
+count  142.000000   142.000000   142.000000   142.000000  142.000000   
+mean   122.077465  2366.274648   860.380282  2039.676056  488.338028   
+std     26.136324   243.154860    82.547277   183.678935   70.896377   
+min     63.000000  1822.000000   664.000000  1676.000000  325.000000   
+25%    101.250000  2185.250000   800.750000  1889.000000  442.250000   
+50%    121.000000  2340.000000   856.500000  2016.000000  480.000000   
+75%    138.000000  2531.500000   909.000000  2184.000000  530.500000   
+max    216.000000  3156.000000  1094.000000  2582.000000  694.000000   
+
+            d_fta       d_3pm       d_3pa      d_oreb      d_dreb  \
+count  142.000000  142.000000  142.000000  142.000000  142.000000   
+mean   651.366197  157.161972  463.014085  330.514085  730.922535   
+std     90.051245   30.482093   82.147246   33.743659   78.264153   
+min    444.000000   92.000000  315.000000  267.000000  567.000000   
+25%    591.250000  135.000000  401.750000  307.250000  676.250000   
+50%    643.500000  153.500000  456.000000  327.000000  720.000000   
+75%    708.500000  173.750000  517.000000  350.000000  786.000000   
+max    932.000000  290.000000  762.000000  445.000000  945.000000   
+
+             d_reb      d_asts        d_pf       d_stl        d_to  \
+count   142.000000  142.000000  142.000000  142.000000  142.000000   
+mean   1061.436620  520.830986  653.915493  263.112676  510.450704   
+std     100.099983   50.782106   51.319814   26.644521   54.038019   
+min     873.000000  388.000000  538.000000  197.000000  390.000000   
+25%     983.000000  491.250000  616.000000  244.250000  470.250000   
+50%    1048.000000  516.000000  649.000000  262.000000  503.000000   
+75%    1117.250000  545.750000  686.500000  277.000000  545.500000   
+max    1390.000000  684.000000  778.000000  347.000000  649.000000   
+
+            d_blk        d_pts  tmORB  tmDRB  tmTRB  opptmORB  opptmDRB  \
+count  142.000000   142.000000  142.0  142.0  142.0     142.0     142.0   
+mean   122.070423  2366.260563    0.0    0.0    0.0       0.0       0.0   
+std     20.658537   234.615384    0.0    0.0    0.0       0.0       0.0   
+min     71.000000  1788.000000    0.0    0.0    0.0       0.0       0.0   
+25%    109.000000  2196.750000    0.0    0.0    0.0       0.0       0.0   
+50%    123.000000  2339.500000    0.0    0.0    0.0       0.0       0.0   
+75%    136.750000  2522.750000    0.0    0.0    0.0       0.0       0.0   
+max    206.000000  3031.000000    0.0    0.0    0.0       0.0       0.0   
+
+       opptmTRB         won        lost          GP       homeW       homeL  \
+count     142.0  142.000000  142.000000  142.000000  142.000000  142.000000   
+mean        0.0   16.661972   16.661972   33.323944   10.169014    6.492958   
+std         0.0    4.999131    4.999131    0.949425    2.994017    2.967308   
+min         0.0    4.000000    4.000000   32.000000    1.000000    0.000000   
+25%         0.0   13.000000   14.000000   32.000000    8.000000    4.250000   
+50%         0.0   17.000000   16.000000   34.000000   11.000000    6.000000   
+75%         0.0   20.000000   20.000000   34.000000   12.000000    8.000000   
+max         0.0   28.000000   30.000000   34.000000   16.000000   16.000000   
+
+            awayW       awayL       confW       confL          min  \
+count  142.000000  142.000000  142.000000  142.000000   142.000000   
+mean     6.492958   10.169014   10.563380   10.563380  6735.683099   
+std      2.702104    2.731409    3.485461    3.485461   197.851093   
+min      1.000000    3.000000    2.000000    2.000000  6400.000000   
+25%      5.000000    9.000000    8.000000    8.000000  6500.000000   
+50%      6.000000   10.000000   11.000000   10.000000  6825.000000   
+75%      8.000000   12.000000   13.000000   13.000000  6875.000000   
+max     13.000000   16.000000   19.000000   19.000000  7025.000000   
+
+              attend  
+count     142.000000  
+mean   141050.253521  
+std     34714.358519  
+min     57635.000000  
+25%    120897.500000  
+50%    135895.500000  
+75%    150441.500000  
+max    259237.000000  
+
+Data types and missing values:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 142 entries, 0 to 141
+Data columns (total 61 columns):
+ #   Column      Non-Null Count  Dtype  
+---  ------      --------------  -----  
+ 0   year        142 non-null    int64  
+ 1   lgID        142 non-null    object 
+ 2   tmID        142 non-null    object 
+ 3   franchID    142 non-null    object 
+ 4   confID      142 non-null    object 
+ 5   divID       0 non-null      float64
+ 6   rank        142 non-null    int64  
+ 7   playoff     142 non-null    object 
+ 8   seeded      142 non-null    int64  
+ 9   firstRound  80 non-null     object 
+ 10  semis       38 non-null     object 
+ 11  finals      20 non-null     object 
+ 12  name        142 non-null    object 
+ 13  o_fgm       142 non-null    int64  
+ 14  o_fga       142 non-null    int64  
+ 15  o_ftm       142 non-null    int64  
+ 16  o_fta       142 non-null    int64  
+ 17  o_3pm       142 non-null    int64  
+ 18  o_3pa       142 non-null    int64  
+ 19  o_oreb      142 non-null    int64  
+ 20  o_dreb      142 non-null    int64  
+ 21  o_reb       142 non-null    int64  
+ 22  o_asts      142 non-null    int64  
+ 23  o_pf        142 non-null    int64  
+ 24  o_stl       142 non-null    int64  
+ 25  o_to        142 non-null    int64  
+ 26  o_blk       142 non-null    int64  
+ 27  o_pts       142 non-null    int64  
+ 28  d_fgm       142 non-null    int64  
+ 29  d_fga       142 non-null    int64  
+ 30  d_ftm       142 non-null    int64  
+ 31  d_fta       142 non-null    int64  
+ 32  d_3pm       142 non-null    int64  
+ 33  d_3pa       142 non-null    int64  
+ 34  d_oreb      142 non-null    int64  
+ 35  d_dreb      142 non-null    int64  
+ 36  d_reb       142 non-null    int64  
+ 37  d_asts      142 non-null    int64  
+ 38  d_pf        142 non-null    int64  
+ 39  d_stl       142 non-null    int64  
+ 40  d_to        142 non-null    int64  
+ 41  d_blk       142 non-null    int64  
+ 42  d_pts       142 non-null    int64  
+ 43  tmORB       142 non-null    int64  
+ 44  tmDRB       142 non-null    int64  
+ 45  tmTRB       142 non-null    int64  
+ 46  opptmORB    142 non-null    int64  
+ 47  opptmDRB    142 non-null    int64  
+ 48  opptmTRB    142 non-null    int64  
+ 49  won         142 non-null    int64  
+ 50  lost        142 non-null    int64  
+ 51  GP          142 non-null    int64  
+ 52  homeW       142 non-null    int64  
+ 53  homeL       142 non-null    int64  
+ 54  awayW       142 non-null    int64  
+ 55  awayL       142 non-null    int64  
+ 56  confW       142 non-null    int64  
+ 57  confL       142 non-null    int64  
+ 58  min         142 non-null    int64  
+ 59  attend      142 non-null    int64  
+ 60  arena       142 non-null    object 
+dtypes: float64(1), int64(50), object(10)
+memory usage: 67.8+ KB
+None
+
+Missing values per column:
+year        0
+lgID        0
+tmID        0
+franchID    0
+confID      0
+           ..
+confW       0
+confL       0
+min         0
+attend      0
+arena       0
+Length: 61, dtype: int64
+
+=================================
+teams_post.csv
+Dataset shape: (80, 5)
+
+First few rows:
+   year tmID  lgID  W  L
+0     1  HOU  WNBA  6  0
+1     1  ORL  WNBA  1  2
+2     1  CLE  WNBA  3  3
+3     1  WAS  WNBA  0  2
+4     1  NYL  WNBA  4  3
+
+Summary statistics:
+            year          W          L
+count  80.000000  80.000000  80.000000
+mean    5.500000   2.350000   2.350000
+std     2.890403   2.228129   0.843441
+min     1.000000   0.000000   0.000000
+25%     3.000000   1.000000   2.000000
+50%     5.500000   1.500000   2.000000
+75%     8.000000   3.250000   3.000000
+max    10.000000   7.000000   5.000000
+
+Data types and missing values:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 80 entries, 0 to 79
+Data columns (total 5 columns):
+ #   Column  Non-Null Count  Dtype 
+---  ------  --------------  ----- 
+ 0   year    80 non-null     int64 
+ 1   tmID    80 non-null     object
+ 2   lgID    80 non-null     object
+ 3   W       80 non-null     int64 
+ 4   L       80 non-null     int64 
+dtypes: int64(3), object(2)
+memory usage: 3.3+ KB
+None
+
+Missing values per column:
+year    0
+tmID    0
+lgID    0
+W       0
+L       0
+dtype: int64
+
+=================================
+series_post.csv
+Dataset shape: (70, 9)
+
+First few rows:
+   year round series tmIDWinner lgIDWinner tmIDLoser lgIDLoser  W  L
+0     1    FR      A        CLE       WNBA       ORL      WNBA  2  1
+1     1    FR      B        NYL       WNBA       WAS      WNBA  2  0
+2     1    FR      C        LAS       WNBA       PHO      WNBA  2  0
+3     1    FR      D        HOU       WNBA       SAC      WNBA  2  0
+4     1    CF      E        HOU       WNBA       LAS      WNBA  2  0
+
+Summary statistics:
+           year          W          L
+count  70.00000  70.000000  70.000000
+mean    5.50000   2.071429   0.614286
+std     2.89302   0.259399   0.572127
+min     1.00000   2.000000   0.000000
+25%     3.00000   2.000000   0.000000
+50%     5.50000   2.000000   1.000000
+75%     8.00000   2.000000   1.000000
+max    10.00000   3.000000   2.000000
+
+Data types and missing values:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 70 entries, 0 to 69
+Data columns (total 9 columns):
+ #   Column      Non-Null Count  Dtype 
+---  ------      --------------  ----- 
+ 0   year        70 non-null     int64 
+ 1   round       70 non-null     object
+ 2   series      70 non-null     object
+ 3   tmIDWinner  70 non-null     object
+ 4   lgIDWinner  70 non-null     object
+ 5   tmIDLoser   70 non-null     object
+ 6   lgIDLoser   70 non-null     object
+ 7   W           70 non-null     int64 
+ 8   L           70 non-null     int64 
+dtypes: int64(3), object(6)
+memory usage: 5.1+ KB
+None
+
+Missing values per column:
+year          0
+round         0
+series        0
+tmIDWinner    0
+lgIDWinner    0
+tmIDLoser     0
+lgIDLoser     0
+W             0
+L             0
+dtype: int64
+
+=================================
+players_teams.csv
+Dataset shape: (1876, 43)
+
+First few rows:
+     playerID  year  stint tmID  lgID  GP  GS  minutes  points  oRebounds  \
+0  abrossv01w     2      0  MIN  WNBA  26  23      846     343         43   
+1  abrossv01w     3      0  MIN  WNBA  27  27      805     314         45   
+2  abrossv01w     4      0  MIN  WNBA  30  25      792     318         44   
+3  abrossv01w     5      0  MIN  WNBA  22  11      462     146         17   
+4  abrossv01w     6      0  MIN  WNBA  31  31      777     304         29   
+
+   dRebounds  rebounds  assists  steals  blocks  turnovers  PF  fgAttempted  \
+0        131       174       53      42       9         85  70          293   
+1        101       146       60      42      10         92  73          316   
+2         97       141       82      44      11         90  79          285   
+3         57        74       45      30       2         43  42          139   
+4         78       107       60      48       6         80  86          276   
+
+   fgMade  ftAttempted  ftMade  threeAttempted  threeMade  dq  PostGP  PostGS  \
+0     114          132      96              76         19   2       0       0   
+1     119          116      56              60         20   0       0       0   
+2     112           98      69              82         25   0       3       3   
+3      49           46      28              53         20   0       2       2   
+4     109           73      53              82         33   0       0       0   
+
+   PostMinutes  PostPoints  PostoRebounds  PostdRebounds  PostRebounds  \
+0            0           0              0              0             0   
+1            0           0              0              0             0   
+2           69          23              1              4             5   
+3           67          20              3              6             9   
+4            0           0              0              0             0   
+
+   PostAssists  PostSteals  PostBlocks  PostTurnovers  PostPF  \
+0            0           0           0              0       0   
+1            0           0           0              0       0   
+2            4           4           1              8       8   
+3            3           1           2              3       7   
+4            0           0           0              0       0   
+
+   PostfgAttempted  PostfgMade  PostftAttempted  PostftMade  \
+0                0           0                0           0   
+1                0           0                0           0   
+2               22           6                8           8   
+3               23           8                4           2   
+4                0           0                0           0   
+
+   PostthreeAttempted  PostthreeMade  PostDQ  
+0                   0              0       0  
+1                   0              0       0  
+2                   7              3       0  
+3                   8              2       0  
+4                   0              0       0  
+
+Summary statistics:
+              year        stint           GP           GS      minutes  \
+count  1876.000000  1876.000000  1876.000000  1876.000000  1876.000000   
+mean      5.326226     0.113539    24.320896    12.438166   501.269190   
+std       2.905475     0.422574    10.460614    13.641697   359.566117   
+min       1.000000     0.000000     1.000000     0.000000     0.000000   
+25%       3.000000     0.000000    17.000000     0.000000   165.000000   
+50%       5.000000     0.000000    29.000000     5.000000   459.000000   
+75%       8.000000     0.000000    32.000000    29.000000   826.250000   
+max      10.000000     3.000000    34.000000    34.000000  1234.000000   
+
+            points    oRebounds    dRebounds     rebounds      assists  \
+count  1876.000000  1876.000000  1876.000000  1876.000000  1876.000000   
+mean    176.261727    24.388060    54.334755    78.722814    39.031983   
+std     161.983839    23.325974    48.347088    69.210226    40.147037   
+min       0.000000     0.000000     0.000000     0.000000     0.000000   
+25%      41.000000     6.000000    15.000000    21.000000     8.000000   
+50%     129.000000    18.000000    42.000000    63.000000    26.000000   
+75%     284.000000    36.000000    83.000000   119.000000    57.250000   
+max     860.000000   162.000000   276.000000   363.000000   236.000000   
+
+            steals       blocks    turnovers           PF  fgAttempted  \
+count  1876.000000  1876.000000  1876.000000  1876.000000  1876.000000   
+mean     19.600746     9.065032    36.480277    48.596482   152.122068   
+std      17.542694    13.497853    27.956998    34.158825   132.153836   
+min       0.000000     0.000000     0.000000     0.000000     0.000000   
+25%       5.000000     1.000000    11.000000    18.000000    42.000000   
+50%      16.000000     4.000000    32.000000    47.000000   118.000000   
+75%      30.000000    11.000000    57.000000    74.000000   243.000000   
+max      99.000000   113.000000   126.000000   143.000000   660.000000   
+
+            fgMade  ftAttempted       ftMade  threeAttempted    threeMade  \
+count  1876.000000  1876.000000  1876.000000     1876.000000  1876.000000   
+mean     64.071962    48.376866    36.358742       34.659382    11.759062   
+std      58.914688    48.238245    37.868260       46.189357    17.023107   
+min       0.000000     0.000000     0.000000        0.000000     0.000000   
+25%      15.000000    10.000000     7.000000        1.000000     0.000000   
+50%      47.000000    33.000000    23.500000       12.000000     4.000000   
+75%     104.000000    73.000000    55.000000       54.000000    18.000000   
+max     298.000000   275.000000   246.000000      305.000000   121.000000   
+
+                dq       PostGP       PostGS  PostMinutes   PostPoints  \
+count  1876.000000  1876.000000  1876.000000  1876.000000  1876.000000   
+mean      0.415778     1.828358     0.990405    39.950959    14.140725   
+std       0.888352     2.659597     2.215079    71.565062    29.551860   
+min       0.000000     0.000000     0.000000     0.000000     0.000000   
+25%       0.000000     0.000000     0.000000     0.000000     0.000000   
+50%       0.000000     0.000000     0.000000     0.000000     0.000000   
+75%       0.250000     3.000000     0.000000    54.250000    15.250000   
+max       7.000000    11.000000    11.000000   412.000000   245.000000   
+
+       PostoRebounds  PostdRebounds  PostRebounds  PostAssists   PostSteals  \
+count    1876.000000    1876.000000   1876.000000  1876.000000  1876.000000   
+mean        1.900320       4.413646      6.313966     3.126333     1.420043   
+std         4.154121       9.121491     12.881782     7.081885     2.992881   
+min         0.000000       0.000000      0.000000     0.000000     0.000000   
+25%         0.000000       0.000000      0.000000     0.000000     0.000000   
+50%         0.000000       0.000000      0.000000     0.000000     0.000000   
+75%         2.000000       5.000000      7.000000     3.000000     1.000000   
+max        33.000000      80.000000    104.000000    71.000000    33.000000   
+
+        PostBlocks  PostTurnovers       PostPF  PostfgAttempted   PostfgMade  \
+count  1876.000000    1876.000000  1876.000000      1876.000000  1876.000000   
+mean      0.759062       2.623134     3.735075        12.282516     5.149254   
+std       2.280011       5.037807     6.697874        24.313379    10.726421   
+min       0.000000       0.000000     0.000000         0.000000     0.000000   
+25%       0.000000       0.000000     0.000000         0.000000     0.000000   
+50%       0.000000       0.000000     0.000000         0.000000     0.000000   
+75%       0.000000       3.000000     5.000000        15.000000     6.000000   
+max      31.000000      34.000000    43.000000       188.000000    82.000000   
+
+       PostftAttempted   PostftMade  PostthreeAttempted  PostthreeMade  \
+count      1876.000000  1876.000000         1876.000000    1876.000000   
+mean          3.672708     2.822495            2.924307       1.019723   
+std           8.463917     6.723170            7.751034       2.992637   
+min           0.000000     0.000000            0.000000       0.000000   
+25%           0.000000     0.000000            0.000000       0.000000   
+50%           0.000000     0.000000            0.000000       0.000000   
+75%           4.000000     2.000000            1.000000       0.000000   
+max          68.000000    62.000000           85.000000      32.000000   
+
+            PostDQ  
+count  1876.000000  
+mean      0.026652  
+std       0.170751  
+min       0.000000  
+25%       0.000000  
+50%       0.000000  
+75%       0.000000  
+max       2.000000  
+
+Data types and missing values:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 1876 entries, 0 to 1875
+Data columns (total 43 columns):
+ #   Column              Non-Null Count  Dtype 
+---  ------              --------------  ----- 
+ 0   playerID            1876 non-null   object
+ 1   year                1876 non-null   int64 
+ 2   stint               1876 non-null   int64 
+ 3   tmID                1876 non-null   object
+ 4   lgID                1876 non-null   object
+ 5   GP                  1876 non-null   int64 
+ 6   GS                  1876 non-null   int64 
+ 7   minutes             1876 non-null   int64 
+ 8   points              1876 non-null   int64 
+ 9   oRebounds           1876 non-null   int64 
+ 10  dRebounds           1876 non-null   int64 
+ 11  rebounds            1876 non-null   int64 
+ 12  assists             1876 non-null   int64 
+ 13  steals              1876 non-null   int64 
+ 14  blocks              1876 non-null   int64 
+ 15  turnovers           1876 non-null   int64 
+ 16  PF                  1876 non-null   int64 
+ 17  fgAttempted         1876 non-null   int64 
+ 18  fgMade              1876 non-null   int64 
+ 19  ftAttempted         1876 non-null   int64 
+ 20  ftMade              1876 non-null   int64 
+ 21  threeAttempted      1876 non-null   int64 
+ 22  threeMade           1876 non-null   int64 
+ 23  dq                  1876 non-null   int64 
+ 24  PostGP              1876 non-null   int64 
+ 25  PostGS              1876 non-null   int64 
+ 26  PostMinutes         1876 non-null   int64 
+ 27  PostPoints          1876 non-null   int64 
+ 28  PostoRebounds       1876 non-null   int64 
+ 29  PostdRebounds       1876 non-null   int64 
+ 30  PostRebounds        1876 non-null   int64 
+ 31  PostAssists         1876 non-null   int64 
+ 32  PostSteals          1876 non-null   int64 
+ 33  PostBlocks          1876 non-null   int64 
+ 34  PostTurnovers       1876 non-null   int64 
+ 35  PostPF              1876 non-null   int64 
+ 36  PostfgAttempted     1876 non-null   int64 
+ 37  PostfgMade          1876 non-null   int64 
+ 38  PostftAttempted     1876 non-null   int64 
+ 39  PostftMade          1876 non-null   int64 
+ 40  PostthreeAttempted  1876 non-null   int64 
+ 41  PostthreeMade       1876 non-null   int64 
+ 42  PostDQ              1876 non-null   int64 
+dtypes: int64(40), object(3)
+memory usage: 630.3+ KB
+None
+
+Missing values per column:
+playerID              0
+year                  0
+stint                 0
+tmID                  0
+lgID                  0
+GP                    0
+GS                    0
+minutes               0
+points                0
+oRebounds             0
+dRebounds             0
+rebounds              0
+assists               0
+steals                0
+blocks                0
+turnovers             0
+PF                    0
+fgAttempted           0
+fgMade                0
+ftAttempted           0
+ftMade                0
+threeAttempted        0
+threeMade             0
+dq                    0
+PostGP                0
+PostGS                0
+PostMinutes           0
+PostPoints            0
+PostoRebounds         0
+PostdRebounds         0
+PostRebounds          0
+PostAssists           0
+PostSteals            0
+PostBlocks            0
+PostTurnovers         0
+PostPF                0
+PostfgAttempted       0
+PostfgMade            0
+PostftAttempted       0
+PostftMade            0
+PostthreeAttempted    0
+PostthreeMade         0
+PostDQ                0
+dtype: int64
+
+=================================
+coaches.csv
+Dataset shape: (162, 9)
+
+First few rows:
+      coachID  year tmID  lgID  stint  won  lost  post_wins  post_losses
+0  adamsmi01w     5  WAS  WNBA      0   17    17          1            2
+1  adubari99w     1  NYL  WNBA      0   20    12          4            3
+2  adubari99w     2  NYL  WNBA      0   21    11          3            3
+3  adubari99w     3  NYL  WNBA      0   18    14          4            4
+4  adubari99w     4  NYL  WNBA      0   16    18          0            0
+
+Summary statistics:
+             year       stint         won        lost   post_wins  post_losses
+count  162.000000  162.000000  162.000000  162.000000  162.000000   162.000000
+mean     5.314815    0.364198   14.672840   14.623457    1.166667     1.172840
+std      2.896715    0.693861    6.403445    5.678789    1.953656     1.316782
+min      1.000000    0.000000    0.000000    2.000000    0.000000     0.000000
+25%      3.000000    0.000000   10.000000   11.000000    0.000000     0.000000
+50%      5.000000    0.000000   16.000000   15.000000    0.000000     0.000000
+75%      8.000000    0.000000   18.750000   18.000000    1.000000     2.000000
+max     10.000000    2.000000   28.000000   30.000000    7.000000     5.000000
+
+Data types and missing values:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 162 entries, 0 to 161
+Data columns (total 9 columns):
+ #   Column       Non-Null Count  Dtype 
+---  ------       --------------  ----- 
+ 0   coachID      162 non-null    object
+ 1   year         162 non-null    int64 
+ 2   tmID         162 non-null    object
+ 3   lgID         162 non-null    object
+ 4   stint        162 non-null    int64 
+ 5   won          162 non-null    int64 
+ 6   lost         162 non-null    int64 
+ 7   post_wins    162 non-null    int64 
+ 8   post_losses  162 non-null    int64 
+dtypes: int64(6), object(3)
+memory usage: 11.5+ KB
+None
+
+Missing values per column:
+coachID        0
+year           0
+tmID           0
+lgID           0
+stint          0
+won            0
+lost           0
+post_wins      0
+post_losses    0
+dtype: int64
+
+=================================
+players.csv
+Dataset shape: (893, 10)
+
+First few rows:
+        bioID  pos  firstseason  lastseason  height  weight  \
+0  abrahta01w    C            0           0    74.0     190   
+1  abrossv01w    F            0           0    74.0     169   
+2  adairje01w    C            0           0    76.0     197   
+3  adamsda01w  F-C            0           0    73.0     239   
+4  adamsjo01w    C            0           0    75.0     180   
+
+             college            collegeOther   birthDate   deathDate  
+0  George Washington                     NaN  1975-09-27  0000-00-00  
+1        Connecticut                     NaN  1980-07-09  0000-00-00  
+2  George Washington                     NaN  1986-12-19  0000-00-00  
+3          Texas A&M  Jefferson College (JC)  1989-02-19  0000-00-00  
+4         New Mexico                     NaN  1981-05-24  0000-00-00  
+
+Summary statistics:
+       firstseason  lastseason      height      weight
+count        893.0       893.0  893.000000  893.000000
+mean           0.0         0.0   65.500560  145.415454
+std            0.0         0.0   20.940425   61.275703
+min            0.0         0.0    0.000000    0.000000
+25%            0.0         0.0   68.000000  140.000000
+50%            0.0         0.0   72.000000  162.000000
+75%            0.0         0.0   75.000000  180.000000
+max            0.0         0.0   80.000000  254.000000
+
+Data types and missing values:
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 893 entries, 0 to 892
+Data columns (total 10 columns):
+ #   Column        Non-Null Count  Dtype  
+---  ------        --------------  -----  
+ 0   bioID         893 non-null    object 
+ 1   pos           815 non-null    object 
+ 2   firstseason   893 non-null    int64  
+ 3   lastseason    893 non-null    int64  
+ 4   height        893 non-null    float64
+ 5   weight        893 non-null    int64  
+ 6   college       726 non-null    object 
+ 7   collegeOther  11 non-null     object 
+ 8   birthDate     893 non-null    object 
+ 9   deathDate     893 non-null    object 
+dtypes: float64(1), int64(3), object(6)
+memory usage: 69.9+ KB
+None
+
+Missing values per column:
+bioID             0
+pos              78
+firstseason       0
+lastseason        0
+height            0
+weight            0
+college         167
+collegeOther    882
+birthDate         0
+deathDate         0
+dtype: int64

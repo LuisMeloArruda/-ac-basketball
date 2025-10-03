@@ -20,7 +20,7 @@
 - birthDate: YYYY-MM-DD
 - deathDate: YYYY-MM-DD or 0000-00-00 if null
 - GP: Games played as uint
-- GS: Games started
+- GS: Games started (not substitute/benched player)
 - minutes: Minutes played as uint
 - points: as uint
 - oRebounds: offensive rebounds

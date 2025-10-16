@@ -1,0 +1,6 @@
+   year tmID  W  L
+0     1  HOU  6  0
+1     1  ORL  1  2
+2     1  CLE  3  3
+3     1  WAS  0  2
+4     1  NYL  4  3

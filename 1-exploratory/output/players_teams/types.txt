@@ -1,0 +1,49 @@
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 1876 entries, 0 to 1875
+Data columns (total 42 columns):
+ #   Column              Non-Null Count  Dtype 
+---  ------              --------------  ----- 
+ 0   playerID            1876 non-null   object
+ 1   year                1876 non-null   int64 
+ 2   stint               1876 non-null   int64 
+ 3   tmID                1876 non-null   object
+ 4   GP                  1876 non-null   int64 
+ 5   GS                  1876 non-null   int64 
+ 6   minutes             1876 non-null   int64 
+ 7   points              1876 non-null   int64 
+ 8   oRebounds           1876 non-null   int64 
+ 9   dRebounds           1876 non-null   int64 
+ 10  rebounds            1876 non-null   int64 
+ 11  assists             1876 non-null   int64 
+ 12  steals              1876 non-null   int64 
+ 13  blocks              1876 non-null   int64 
+ 14  turnovers           1876 non-null   int64 
+ 15  PF                  1876 non-null   int64 
+ 16  fgAttempted         1876 non-null   int64 
+ 17  fgMade              1876 non-null   int64 
+ 18  ftAttempted         1876 non-null   int64 
+ 19  ftMade              1876 non-null   int64 
+ 20  threeAttempted      1876 non-null   int64 
+ 21  threeMade           1876 non-null   int64 
+ 22  dq                  1876 non-null   int64 
+ 23  PostGP              1876 non-null   int64 
+ 24  PostGS              1876 non-null   int64 
+ 25  PostMinutes         1876 non-null   int64 
+ 26  PostPoints          1876 non-null   int64 
+ 27  PostoRebounds       1876 non-null   int64 
+ 28  PostdRebounds       1876 non-null   int64 
+ 29  PostRebounds        1876 non-null   int64 
+ 30  PostAssists         1876 non-null   int64 
+ 31  PostSteals          1876 non-null   int64 
+ 32  PostBlocks          1876 non-null   int64 
+ 33  PostTurnovers       1876 non-null   int64 
+ 34  PostPF              1876 non-null   int64 
+ 35  PostfgAttempted     1876 non-null   int64 
+ 36  PostfgMade          1876 non-null   int64 
+ 37  PostftAttempted     1876 non-null   int64 
+ 38  PostftMade          1876 non-null   int64 
+ 39  PostthreeAttempted  1876 non-null   int64 
+ 40  PostthreeMade       1876 non-null   int64 
+ 41  PostDQ              1876 non-null   int64 
+dtypes: int64(40), object(2)
+memory usage: 615.7+ KB

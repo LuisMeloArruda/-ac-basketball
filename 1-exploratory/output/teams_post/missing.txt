@@ -1,0 +1,4 @@
+year    0
+tmID    0
+W       0
+L       0

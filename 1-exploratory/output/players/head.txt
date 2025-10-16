@@ -1,0 +1,6 @@
+        bioID  pos  height  weight            college
+0  abrahta01w    C    74.0     190  George Washington
+1  abrossv01w    F    74.0     169        Connecticut
+2  adairje01w    C    76.0     197  George Washington
+3  adamsda01w  F-C    73.0     239          Texas A&M
+4  adamsjo01w    C    75.0     180         New Mexico

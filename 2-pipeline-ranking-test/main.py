@@ -1,3 +1,5 @@
+import math
+import random
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
@@ -8,17 +10,9 @@ from sklearn.preprocessing import LabelEncoder
 # 1. Load data
 
 # TODO: Desnormalize data of all .csv files into one DataFrame
-df = pd.read_csv("../database/teams.csv")
+df = pd.read_csv("../database/cleaned/teams.csv")
 
 # 2. Preprocessing
-cols_to_drop = [
-    "seeded",
-    "divID",
-    "tmORB", "tmDRB", "tmTRB",
-    "opptmORB", "opptmDRB", "opptmTRB"
-]
-df = df.drop(columns=cols_to_drop)
-
 for column in df:
     if df.dtypes[column] == object:
         # TODO: is necessary to hold the encoder for each column?
@@ -27,27 +21,42 @@ for column in df:
 
 # TODO: Improve preprocessing
 
-# 3. Seperate target from data
-target = df["rank"]
-features = df.drop(columns="rank")
-
-# 4. Pipeline
+# 3. Pipeline
 
 # TODO: Explore different models
 pipeline = Pipeline(steps=[
     ('model', RandomForestClassifier(random_state=42))
 ])
 
-# 5. Separate traning and test data
+# 4. Separate traning and test data
 
-# TODO: Improve test divide
-features_train, features_test, target_train, target_test = train_test_split(
-    features, target, test_size=0.2, random_state=42
-)
+# 4.1. Select years for testing
+years = df['year'].unique().tolist()
+years = random.sample(years, len(years))
+test_size = 0.2
+ty_len = math.ceil(len(years) * test_size)
+test_years = years[::ty_len]
 
-# 6. Train model
+# 4.2. Divide train and test data 
+features_train = []
+features_test = []
+target_train = []
+target_test = []
+
+for line in df.iterrows():
+    line = line[1]
+    target_line = line["rank"]
+    feature_line = line.drop(columns="rank")
+    if line["year"] in test_years:
+        target_test.append(target_line)
+        features_test.append(feature_line)
+    else:
+        target_train.append(target_line)
+        features_train.append(feature_line)
+
+# 5. Train model
 pipeline.fit(features_train, target_train)
 
-# 7. Test model
+# 6. Test model
 target_prediction = pipeline.predict(features_test)
 print(classification_report(target_test, target_prediction))

@@ -1,0 +1,9 @@
+coachID        0
+year           0
+tmID           0
+lgID           0
+stint          0
+won            0
+lost           0
+post_wins      0
+post_losses    0

@@ -1,0 +1,6 @@
+     playerID                               award  year
+0  thompti01w  All-Star Game Most Valuable Player     1
+1  leslili01w  All-Star Game Most Valuable Player     2
+2  leslili01w  All-Star Game Most Valuable Player     3
+3  teaslni01w  All-Star Game Most Valuable Player     4
+4  swoopsh01w  All-Star Game Most Valuable Player     6

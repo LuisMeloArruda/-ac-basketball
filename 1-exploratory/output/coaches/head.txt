@@ -1,0 +1,6 @@
+      coachID  year tmID  lgID  stint  won  lost  post_wins  post_losses
+0  adamsmi01w     5  WAS  WNBA      0   17    17          1            2
+1  adubari99w     1  NYL  WNBA      0   20    12          4            3
+2  adubari99w     2  NYL  WNBA      0   21    11          3            3
+3  adubari99w     3  NYL  WNBA      0   18    14          4            4
+4  adubari99w     4  NYL  WNBA      0   16    18          0            0

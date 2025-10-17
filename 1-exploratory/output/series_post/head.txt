@@ -1,0 +1,6 @@
+   year round series tmIDWinner tmIDLoser  W  L
+0     1    FR      A        CLE       ORL  2  1
+1     1    FR      B        NYL       WAS  2  0
+2     1    FR      C        LAS       PHO  2  0
+3     1    FR      D        HOU       SAC  2  0
+4     1    CF      E        HOU       LAS  2  0

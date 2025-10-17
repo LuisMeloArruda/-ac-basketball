@@ -20,7 +20,7 @@
 - birthDate: YYYY-MM-DD
 - deathDate: YYYY-MM-DD or 0000-00-00 if null
 - GP: Games played as uint
-- GS: Games started
+- GS: Games started (not substitute/benched player)
 - minutes: Minutes played as uint
 - points: as uint
 - oRebounds: offensive rebounds
@@ -56,3 +56,37 @@
 - arena: noem da arena
 
 > series_post.csv and teams_post.csv is self-explanatory
+
+### What to remove from each table
+> players_team
+    - lgID (always "WNBA")
+
+> players
+    - collegeOther (too many nulls)
+    - firstseason (always 0)
+    - lastseason (always 0)
+    - deathDate (not important)
+    - birthDate (not important)
+
+> awards_players
+    - lgID (always "WNBA")
+
+> series_post
+    - lgIDWinner (alwats "WNBA")
+    - lgIDLoser (always "WNBA")
+
+> teams_post
+    - lgID (always "WNBA")
+
+> teams
+    - lgID (always "WNBA")
+    - divID (empty)
+    - seeded (always 0)
+    - tmORB (always 0)
+    - tmDRB (always 0)
+    - tmTRB (always 0)
+    - opptmORB (always 0)
+    - opptmDRB (always 0)
+    - opptmTRB (always 0)
+
+> coaches

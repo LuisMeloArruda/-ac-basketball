@@ -1,0 +1,7 @@
+year          0
+round         0
+series        0
+tmIDWinner    0
+tmIDLoser     0
+W             0
+L             0

@@ -27,6 +27,15 @@ def clean_csv(name):
     cols = columns_to_remove.get(name, [])
     df = df.drop(columns=[col for col in cols if col in df.columns])
 
+    # Filters
+    if name == "players":
+        df = df[
+            df["pos"].notna() &
+            df["college"].notna() &
+            (df["height"] > 0) &
+            (df["weight"] > 0)
+        ]
+
     # Save cleaned version
     out_path = os.path.join(CLEANED_FOLDER, f"{name}.csv")
     df.to_csv(out_path, index=False)

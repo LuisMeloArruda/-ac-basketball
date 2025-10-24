@@ -67,6 +67,7 @@
     - lastseason (always 0)
     - deathDate (not important)
     - birthDate (not important)
+    - Remove all players with null pos, 0 height, 0 weight and null college
 
 > awards_players
     - lgID (always "WNBA")

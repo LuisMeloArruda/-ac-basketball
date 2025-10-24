@@ -23,10 +23,15 @@ columns_to_remove = {
 
 columns_to_remove_redundancy = {
     "players_teams": [
-    "lgID", "fgAttempted", "fgMade",
+    "fgAttempted", "fgMade",
     "rebounds", "threeMade", "PostRebounds",
     "PostfgAttempted", "PostfgMade", "PostMinutes",
-    "PostthreeMade", "PostthreeAttempted"
+    "PostthreeMade", "PostftMade", "ftMade"
+    ],
+    "teams": [
+    "homeL", "awayL", "lost",
+    "d_fta", "o_3pa", "min",
+    "o_pts", "d_pts", "d_reb"
     ],
 }
 

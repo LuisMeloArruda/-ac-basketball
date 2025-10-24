@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Folders
-INPUT_FOLDER = '../database/cleaned/'
+INPUT_FOLDER = '../database/final/'
 OUTPUT_FOLDER = './output_rank/'
 
 # Load base tables

@@ -1,5 +1,5 @@
-bioID        0
-pos         78
-height       0
-weight       0
-college    167
+bioID      0
+pos        0
+height     0
+weight     0
+college    0

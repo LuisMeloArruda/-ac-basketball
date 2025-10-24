@@ -91,3 +91,20 @@
     - opptmTRB (always 0)
 
 > coaches
+
+### What to remove from each table because of redundancy
+**stay - remove**
+
+> players_team
+    points - fgAttempted, fgMade
+    oRebounds -  rebounds
+    dRebounds - rebounds
+    threeAttempted - threeMade
+    PostoRebounds - PostRebounds
+    PostdRebounds - PostRebounds
+    PostPoints - PostfgAttempted, PostfgMade, PostMinutes
+    PostthreeAttempted - PostthreeMade
+    PostthreeMade - PostthreeAttempted
+
+> teams
+

@@ -29,7 +29,6 @@ columns_to_remove_redundancy = {
     "PostthreeMade", "PostftMade", "ftMade"
     ],
     "teams": [
-    "homeL", "awayL", "lost",
     "d_fta", "o_3pa", "min",
     "o_pts", "d_pts", "d_reb"
     ],

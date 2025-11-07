@@ -10,7 +10,13 @@ from sklearn.preprocessing import LabelEncoder
 # 1. Load data
 
 # TODO: Desnormalize data of all .csv files into one DataFrame
-df = pd.read_csv("../database/cleaned/teams.csv")
+teams = pd.read_csv("../database/cleaned/teams.csv")
+players_teams = pd.read_csv("../database/cleaned/players_teams.csv")
+players = pd.read_csv("../database/cleaned/players.csv")
+df = players_teams.merge(teams, on='tmID').groupby('tmID').agg(list)
+df.to_csv("test.csv")
+print(df.head())
+print("test")
 
 # 2. Preprocessing
 for column in df:

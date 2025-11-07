@@ -107,12 +107,11 @@
     PostthreeMade - PostthreeAttempted
 
 > teams
-    homeW - homeL
-    awayW - awayL
-    won - lost
     d_ftm - d_fta
     o_3pm - o_3pa
     GP - min
     o_fgm - o_pts
     d_fgm - d_pts
     d_dreb - d_reb
+
+### Test 

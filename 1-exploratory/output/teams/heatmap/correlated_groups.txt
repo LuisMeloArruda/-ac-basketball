@@ -1,0 +1,29 @@
+Groups of columns with correlation > 0.95 or < -0.95:
+
+Group 1 (2 columns):
+  o_fgm ↔ o_pts : 0.965
+
+Group 2 (2 columns):
+  o_3pa ↔ o_3pm : 0.97
+
+Group 3 (2 columns):
+  d_fgm ↔ d_pts : 0.959
+
+Group 4 (2 columns):
+  d_fta ↔ d_ftm : 0.98
+
+Group 5 (2 columns):
+  d_dreb ↔ d_reb : 0.958
+
+Group 6 (2 columns):
+  lost ↔ won : -0.982
+
+Group 7 (2 columns):
+  GP ↔ min : 0.968
+
+Group 8 (2 columns):
+  homeL ↔ homeW : -0.987
+
+Group 9 (2 columns):
+  awayL ↔ awayW : -0.985
+

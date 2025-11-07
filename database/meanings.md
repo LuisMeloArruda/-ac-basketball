@@ -67,6 +67,7 @@
     - lastseason (always 0)
     - deathDate (not important)
     - birthDate (not important)
+    - Remove all players with null pos, 0 height, 0 weight and null college
 
 > awards_players
     - lgID (always "WNBA")
@@ -90,3 +91,28 @@
     - opptmTRB (always 0)
 
 > coaches
+
+### What to remove from each table because of redundancy
+**stay - remove**
+
+> players_team
+    points - fgAttempted, fgMade
+    oRebounds -  rebounds
+    dRebounds - rebounds
+    threeAttempted - threeMade
+    PostoRebounds - PostRebounds
+    PostdRebounds - PostRebounds
+    PostPoints - PostfgAttempted, PostfgMade, PostMinutes
+    PostthreeAttempted - PostthreeMade
+    PostthreeMade - PostthreeAttempted
+
+> teams
+    homeW - homeL
+    awayW - awayL
+    won - lost
+    d_ftm - d_fta
+    o_3pm - o_3pa
+    GP - min
+    o_fgm - o_pts
+    d_fgm - d_pts
+    d_dreb - d_reb

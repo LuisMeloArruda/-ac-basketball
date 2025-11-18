@@ -1,11 +1,15 @@
 import math
 import random
+import numpy as np
 import pandas as pd
-from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report
+from scipy.sparse import lil_matrix
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder
+from sklearn.multioutput import MultiOutputRegressor
+from sklearn.model_selection import GridSearchCV
 
 # 1. Load data
 df = pd.read_csv("../database/final/players_teams.csv")
@@ -18,67 +22,76 @@ for column in df:
         label_encoder = LabelEncoder()
         df[column] = label_encoder.fit_transform(df[column].astype(str))
 
-# Create `teamates` column as an array of playerIDs from the same team
-# teamID -> Array(PlayerID)
-team_players_dict = {}
+# Sparse Multi-Hot matrix to encode teammates
+player_count = len(df["playerID"].unique())
+rows_count = df["playerID"].shape[0]
+teammate_matrix = lil_matrix((rows_count, player_count), dtype=np.int8)
 
-for _, row in df.iterrows():
-    teamID = row["tmID"]
-    year = row["year"]
-    playerID = row["playerID"]
+for idx, row in df.iterrows():
+    tmID, year, player = row["tmID"], row["year"], row["playerID"]
+    teammates = df[
+        (df["tmID"] == tmID) & (df["year"] == year) & (df["playerID"] != player)
+    ]["playerID"]
+    for teammate in teammates:
+        teammate_matrix[idx, teammate] = 1
 
-    if (teamID, year) not in team_players_dict:
-        team_players_dict[(teamID, year)] = []
-    team_players_dict[(teamID, year)].append(playerID)
+teammate_df = pd.DataFrame(
+    teammate_matrix.toarray(),
+    # index=['playerID'],
+    columns=[f"teammate_{id}" for id in df["playerID"].unique()],
+)
 
-teammates = []
-for _, row in df.iterrows():
-    teamID = row["tmID"]
-    year = row["year"]
-    teammates.append(team_players_dict[(teamID, year)])
+# Merge datframes
+df = pd.concat([df, teammate_df], axis=1)
 
-df['teammates'] = teammates
+# Remove columns
+df.drop("stint", axis=1, inplace=True)
+df.drop("tmID", axis=1, inplace=True)
 
-# Remove column `stint`
-df.drop('stint', axis=1, inplace=True)
+# 3. Model
+model = MultiOutputRegressor(RandomForestRegressor(), n_jobs=1)
 
-
-# TODO: Convert `teammates` to a set of columns with playerIDs and 0/1 values
-
-
-# 3. Pipeline
-pipeline = Pipeline(steps=[
-    ('model', RandomForestClassifier(random_state=42))
-])
-
-# 4. Separate traning and test data
+# 4. Separate training and test data
 
 # 4.1. Select years for testing
-years = df['year'].unique().tolist()
+years = df["year"].unique().tolist()
 years = random.sample(years, len(years))
 test_size = 0.2
 ty_len = math.ceil(len(years) * test_size)
 test_years = years[:ty_len]
 
-# 4.2. Divide train and test data 
-features_train = []
-features_test = []
-target_train = []
-target_test = []
+# 4.2. Divide train and test data
+mask = df["year"].isin(test_years)
+features = df[["playerID"] + [f"teammate_{id}" for id in df["playerID"].unique()]]
+target = df[
+    [
+        "GP",
+        "GS",
+        "minutes",
+        "points",
+        "oRebounds",
+        "dRebounds",
+        "assists",
+        "steals",
+        "blocks",
+        "turnovers",
+        "PF",
+        "ftAttempted",
+        "threeAttempted",
+        "dq",
+    ]
+]
 
-for _, row in df.iterrows():
-    feature_line = row[["playerID", "teammates"]]
-    target_line = df.drop(columns=["playerID", "teammates"])
-    if row["year"] in test_years:
-        target_test.append(target_line)
-        features_test.append(feature_line)
-    else:
-        target_train.append(target_line)
-        features_train.append(feature_line)
+features_train = features[~mask]
+features_test = features[mask]
+target_train = target[~mask]
+target_test = target[mask]
 
 # 5. Train model
-pipeline.fit(features_train, target_train)
+model.fit(features_train, target_train)
 
 # 6. Test model
-target_prediction = pipeline.predict(features_test)
-print(classification_report(target_test, target_prediction))
+target_prediction = model.predict(features_test)
+print("Mean Absolute Error: ", mean_absolute_error(target_test, target_prediction))
+print("Mean Squared Error: ", mean_squared_error(target_test, target_prediction))
+print("R Squared Score: ", r2_score(target_test, target_prediction))

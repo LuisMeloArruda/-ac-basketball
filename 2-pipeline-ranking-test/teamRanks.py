@@ -52,8 +52,7 @@ years = df["year"].unique().tolist()
 years = random.sample(years, len(years))
 test_size = 0.2
 ty_len = math.ceil(len(years) * test_size)
-# test_years = years[:ty_len]
-test_years = [7]
+test_years = years[:ty_len]
 
 # 4.2. Divide train and test data
 mask = df["year"].isin(test_years)

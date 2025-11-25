@@ -96,10 +96,8 @@
 **stay - remove**
 
 > players_team
-    points - fgAttempted, fgMade
     oRebounds -  rebounds
     dRebounds - rebounds
-    threeAttempted - threeMade
     PostoRebounds - PostRebounds
     PostdRebounds - PostRebounds
     PostPoints - PostfgAttempted, PostfgMade, PostMinutes
@@ -111,7 +109,7 @@
     o_3pm - o_3pa
     GP - min
     o_fgm - o_pts
-    d_fgm - d_pts
+    d_pts - d_fgm
     d_dreb - d_reb
 
 ### Test 

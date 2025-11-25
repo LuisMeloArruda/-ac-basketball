@@ -5,3 +5,6 @@
 .nix/
 .envrc
 .direnv/
+
+# vscode
+.vscode

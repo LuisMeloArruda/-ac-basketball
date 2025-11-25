@@ -1,10 +1,12 @@
 import math
 import random
+
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import classification_report, confusion_matrix, mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import LabelEncoder
+from sklearn.svm import NuSVR
 
 # 1. Load data
 df = pd.read_csv("../database/final/teams.csv")
@@ -43,7 +45,7 @@ df.drop(
 )
 
 # 3. Model
-model = RandomForestClassifier()
+model = NuSVR()
 
 # 4. Separate training and test data
 
@@ -71,7 +73,7 @@ features = df[
         "o_stl",
         "o_to",
         "o_blk",
-        "d_fgm",
+        "o_pts",
         "d_fga",
         "d_ftm",
         "d_3pm",
@@ -83,6 +85,7 @@ features = df[
         "d_stl",
         "d_to",
         "d_blk",
+        "d_pts",
     ]
 ]
 target = df["rank"]
@@ -97,5 +100,43 @@ model.fit(features_train, target_train)
 
 # 6. Test model
 target_prediction = model.predict(features_test)
-print(confusion_matrix(target_test, target_prediction))
-print(classification_report(target_test, target_prediction))
+
+# 7. Get ranks from the float `rank`
+results = df[["year", "tmID", "confID"]]
+results = results[mask]
+results["rank_score"] = target_prediction
+
+years = []
+tmIDs = []
+confIDs = []
+rank_scores = []
+
+for year in sorted(results["year"].unique()):
+    for confID in sorted(results["confID"].unique()):
+        year_results = results[(results["year"] == year) & (results["confID"] == confID)]
+        sorted_year_results = year_results.sort_values("rank_score")
+        for (rank, tmID) in enumerate(sorted_year_results["tmID"]):
+            years.append(year)
+            confIDs.append(confID)
+            tmIDs.append(tmID)
+            rank_scores.append(rank + 1)
+        
+classification_ranks = pd.DataFrame({
+    "year": years,
+    "tmID": tmIDs,
+    "confID": confIDs,
+    "rank": rank_scores,
+})
+
+# Convert regression prediction into a classification prediction
+target_prediction = []
+year_tm_test = df[["year", "tmID", "confID"]][mask]
+for row in year_tm_test.iterrows():
+    year = row[1]["year"]
+    tmID = row[1]["tmID"]
+    confID = row[1]["confID"]
+    rank = classification_ranks.loc[(classification_ranks["year"] == year) & (classification_ranks["tmID"] == tmID) & (classification_ranks["confID"] == confID), "rank"].values[0]
+    target_prediction.append(rank)
+    
+
+print("Clasification report: \n", classification_report(target_test, target_prediction))

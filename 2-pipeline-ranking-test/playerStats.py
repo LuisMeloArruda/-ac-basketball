@@ -1,136 +1,172 @@
 import math
 import random
+
 import numpy as np
 import pandas as pd
 from scipy.sparse import lil_matrix
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import LabelEncoder
 from sklearn.multioutput import MultiOutputRegressor
-from sklearn.model_selection import GridSearchCV
-
-# 1. Load data
-df = pd.read_csv("../database/final/players_teams.csv")
-
-# 2. Preprocessing
-
-# Convert string data to a number
-encoders = {}
-for column in df:
-    if df.dtypes[column] == object:
-        label_encoder = LabelEncoder()
-        df[column] = label_encoder.fit_transform(df[column].astype(str))
-        encoders[column] = label_encoder
-
-# 2.1 Create Sparse Multi-Hot teammate matrix
-player_ids = df["playerID"].unique()
-player_count = len(player_ids)
-rows_count = df.shape[0]
-
-id_to_index = {pid: i for i, pid in enumerate(player_ids)}
-
-teammate_matrix = lil_matrix((rows_count, player_count), dtype=np.int8)
-
-for idx, row in df.iterrows():
-    tmID, year, player = row["tmID"], row["year"], row["playerID"]
-
-    teammates = df[
-        (df["tmID"] == tmID) &
-        (df["year"] == year) &
-        (df["playerID"] != player)
-    ]["playerID"]
-
-    for teammate in teammates:
-        teammate_matrix[idx, id_to_index[teammate]] = 1
-
-# Convert sparse matrix to DataFrame
-teammate_df = pd.DataFrame(
-    teammate_matrix.toarray(),
-    columns=[f"teammate_{pid}" for pid in player_ids]
-)
-
-# Merge with original DF
-df = pd.concat([df, teammate_df], axis=1)
-
-# Remove useless columns
-df.drop("stint", axis=1, inplace=True)
+from sklearn.preprocessing import LabelEncoder
 
 
-# 3. Model
-model = MultiOutputRegressor(RandomForestRegressor(), n_jobs=1)
+class PlayerStats:
+    @staticmethod
+    def preprocess(df):
+        # Convert string data to a number
+        encoders = {}
+        for column in df:
+            if df.dtypes[column] == object:
+                label_encoder = LabelEncoder()
+                df.loc[:, column] = label_encoder.fit_transform(df[column].astype(str))
+                encoders[column] = label_encoder
 
-# 4. Split train/test by YEARS
+        # Create Sparse Multi-Hot teammate matrix
+        player_ids = df["playerID"].unique()
+        player_count = len(player_ids)
+        rows_count = df.shape[0]
 
-years = df["year"].unique().tolist()
-random.shuffle(years)
+        id_to_index = {pid: i for i, pid in enumerate(player_ids)}
 
-test_size = 0.1
-test_years = years[:math.ceil(len(years) * test_size)]
+        teammate_matrix = lil_matrix((rows_count, player_count), dtype=np.int8)
 
-mask = df["year"].isin(test_years)
+        for idx, row in df.iterrows():
+            tmID, year, player = row["tmID"], row["year"], row["playerID"]
 
-features = df[
-    ["playerID", "tmID"] +
-    [f"teammate_{pid}" for pid in player_ids]
-]
+            teammates = df[
+                (df["tmID"] == tmID) & (df["year"] == year) & (df["playerID"] != player)
+            ]["playerID"]
 
-target = df[
-    [
-        "fgAttempted", "fgMade", "ftMade",
-        "GP", "GS", "minutes", "points",
-        "oRebounds", "dRebounds",
-        "assists", "steals", "blocks",
-        "turnovers", "PF",
-        "ftAttempted", "threeMade", "dq"
-    ]
-]
+            for teammate in teammates:
+                # print(rows_count, player_count, idx, id_to_index[teammate])
+                teammate_matrix[idx, id_to_index[teammate]] = 1
 
-features_train = features[~mask]
-features_test = features[mask]
-target_train = target[~mask]
-target_test = target[mask]
+        # Convert sparse matrix to DataFrame
+        teammate_df = pd.DataFrame(
+            teammate_matrix.toarray(), columns=[f"teammate_{pid}" for pid in player_ids]
+        )
 
-# 5. Train model
-model.fit(features_train, target_train)
+        # Merge with original DF
+        df = pd.concat([df, teammate_df], axis=1)
 
-# 6. Evaluate
-target_prediction = model.predict(features_test)
+        # Remove useless columns
+        df.drop("stint", axis=1, inplace=True)
 
-print("Mean Absolute Error: ", mean_absolute_error(target_test, target_prediction))
-print("Mean Squared Error: ", mean_squared_error(target_test, target_prediction))
-print("R Squared Score: ", r2_score(target_test, target_prediction))
+        return (df, encoders)
 
-# 7. Build prediction DataFrame
-pred_df = pd.DataFrame(
-    target_prediction,
-    columns=[
-        "fgAttempted", "fgMade", "ftMade",
-        "GP", "GS", "minutes", "points",
-        "oRebounds", "dRebounds",
-        "assists", "steals", "blocks",
-        "turnovers", "PF",
-        "ftAttempted", "threeMade", "dq"
-    ]
-)
+    @staticmethod
+    def filterFeatures(df):
+        teammate_columns = [
+            df_col for df_col in df.columns if df_col.startswith("teammate_")
+        ]
+        return df[["playerID", "tmID"] + teammate_columns]
 
-# Restore real Player IDs
-pred_df["playerID"] = encoders["playerID"].inverse_transform(
-    features_test["playerID"].values
-)
+    @staticmethod
+    def filterTargets(df):
+        return df[
+            [
+                "fgAttempted",
+                "fgMade",
+                "ftMade",
+                "GP",
+                "GS",
+                "minutes",
+                "points",
+                "oRebounds",
+                "dRebounds",
+                "assists",
+                "steals",
+                "blocks",
+                "turnovers",
+                "PF",
+                "ftAttempted",
+                "threeMade",
+                "dq",
+            ]
+        ]
 
-# Restore years and team IDs
-pred_df["year"] = df.loc[mask, "year"].values
-pred_df["tmID"] = encoders["tmID"].inverse_transform(
-    df.loc[mask, "tmID"].values
-)
+    @staticmethod
+    def generateModel(training_df):
+        features = PlayerStats.filterFeatures(training_df)
+        target = PlayerStats.filterTargets(training_df)
+        model = MultiOutputRegressor(RandomForestRegressor(), n_jobs=1)
+        model.fit(features, target)
+        return model
 
-# reorder columns: playerID, year, tmID, stats
-pred_df = pred_df[
-    ["playerID", "year", "tmID"] +
-    [c for c in pred_df.columns if c not in ["playerID", "year", "tmID"]]
-]
+    @staticmethod
+    def generateResult(model, input_df, encoders):
+        target_prediction = model.predict(input_df)
 
-pred_df.to_csv("outputs/predicted_players_stats.csv", index=False)
-print("\nSaved predicted_players_stats.csv")
+        # Build prediction DataFrame
+        pred_df = pd.DataFrame(
+            target_prediction,
+            columns=[
+                "fgAttempted",
+                "fgMade",
+                "ftMade",
+                "GP",
+                "GS",
+                "minutes",
+                "points",
+                "oRebounds",
+                "dRebounds",
+                "assists",
+                "steals",
+                "blocks",
+                "turnovers",
+                "PF",
+                "ftAttempted",
+                "threeMade",
+                "dq",
+            ],
+        )
+
+        # Restore real Player IDs
+        pred_df["playerID"] = encoders["playerID"].inverse_transform(
+            input_df["playerID"].values
+        )
+
+        # Restore years and team IDs
+        pred_df["year"] = input_df["year"]
+        pred_df["tmID"] = encoders["tmID"].inverse_transform(input_df["tmID"])
+
+        # reorder columns: playerID, year, tmID, stats
+        pred_df = pred_df[
+            ["playerID", "year", "tmID"]
+            + [c for c in pred_df.columns if c not in ["playerID", "year", "tmID"]]
+        ]
+
+        pred_df.to_csv("outputs/predicted_players_stats.csv", index=False)
+        print("\nSaved predicted_players_stats.csv")
+
+    @staticmethod
+    def testModel(model, input_df, results):
+        prediction = model.predict(input_df)
+        print("Mean Absolute Error: ", mean_absolute_error(results, prediction))
+        print("Mean Squared Error: ", mean_squared_error(results, prediction))
+        print("R Squared Score: ", r2_score(results, prediction))
+
+
+def main():
+    df = pd.read_csv("../database/final/players_teams.csv")
+
+    # Divide dataframe into years and select some for testing
+    years = df["year"].unique().tolist()
+    random.shuffle(years)
+    test_size = 0.1
+    test_years = years[: math.ceil(len(years) * test_size)]
+    test_mask = df["year"].isin(test_years)
+
+    (df, encoders) = PlayerStats.preprocess(df)
+    training_df = df[~test_mask]
+    model = PlayerStats.generateModel(training_df)
+
+    test_df = df[test_mask]
+    test_df.reset_index(drop=True, inplace=True)
+    features = PlayerStats.filterFeatures(test_df)
+    targets = PlayerStats.filterTargets(test_df)
+    PlayerStats.testModel(model, features, targets)
+
+
+if __name__ == "__main__":
+    main()

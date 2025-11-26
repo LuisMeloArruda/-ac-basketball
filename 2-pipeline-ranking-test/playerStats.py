@@ -123,7 +123,7 @@ class PlayerStats:
 
         # Restore real Player IDs
         pred_df["playerID"] = encoders["playerID"].inverse_transform(
-            input_df["playerID"].values
+            input_df["playerID"]
         )
 
         # Restore years and team IDs

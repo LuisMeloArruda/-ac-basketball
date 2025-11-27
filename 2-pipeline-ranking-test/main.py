@@ -20,9 +20,8 @@ def main():
     ps_model = PlayerStats(training_df)
     print("PlayerStats model trained!")
 
-    (ps_input, _) = PlayerStats.preprocess(input_df)
-    ps_input = PlayerStats.filterFeatures(ps_input)
-    ps_output = PlayerStats.generateResult(ps_model.model, ps_input, ps_model.encoders)
+    ps_input = ps_model.preprocessInput(input_df)
+    ps_output = ps_model.generateResult(ps_input)
     print("PlayerStats results generated!")
 
     # Step 2: Generate team stats from player stats

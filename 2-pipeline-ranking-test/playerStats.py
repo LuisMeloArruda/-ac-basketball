@@ -12,27 +12,22 @@ from sklearn.preprocessing import LabelEncoder
 
 class PlayerStats:
     def __init__(self, training_df):
-        (training_df, encoders) = PlayerStats.preprocess(training_df)
-        self.encoders = encoders
+        self.encoders = {}
+        self.known_players = []
+        training_df = self.preprocessTraining(training_df)
         model = PlayerStats.generateModel(training_df)
         self.model = model
 
-    @staticmethod
-    def preprocess(df):
+    def preprocessTraining(self, df):
         # Convert string data to a number
-        encoders = {}
-        for column in df:
-            if df.dtypes[column] == object:
-                label_encoder = LabelEncoder()
-                df.loc[:, column] = label_encoder.fit_transform(df[column].astype(str))
-                encoders[column] = label_encoder
+        for column in ["playerID", "tmID"]:
+            self.encoders[column] = LabelEncoder()
+            df.loc[:, column] = self.encoders[column].fit_transform(df[column].astype(str))
 
         # Create Sparse Multi-Hot teammate matrix
-        player_ids = df["playerID"].unique()
-        player_count = len(player_ids)
+        self.known_players = df["playerID"].unique()
+        player_count = len(self.known_players)
         rows_count = df.shape[0]
-
-        id_to_index = {pid: i for i, pid in enumerate(player_ids)}
 
         teammate_matrix = lil_matrix((rows_count, player_count), dtype=np.int8)
 
@@ -44,12 +39,11 @@ class PlayerStats:
             ]["playerID"]
 
             for teammate in teammates:
-                # print(rows_count, player_count, idx, id_to_index[teammate])
-                teammate_matrix[idx, id_to_index[teammate]] = 1
+                teammate_matrix[idx, teammate] = 1
 
         # Convert sparse matrix to DataFrame
         teammate_df = pd.DataFrame(
-            teammate_matrix.toarray(), columns=[f"teammate_{pid}" for pid in player_ids]
+            teammate_matrix.toarray(), columns=[f"teammate_{pid}" for pid in self.known_players]
         )
 
         # Merge with original DF
@@ -58,7 +52,41 @@ class PlayerStats:
         # Remove useless columns
         df.drop("stint", axis=1, inplace=True)
 
-        return (df, encoders)
+        return df
+    
+    def preprocessInput(self, df):
+        # Convert string data to a number
+        for column in ["playerID", "tmID"]:
+            df.loc[:, column] = self.encoders[column].fit_transform(df[column].astype(str))
+
+        # Create Sparse Multi-Hot teammate matrix
+        player_count = len(self.known_players)
+        rows_count = df.shape[0]
+
+        teammate_matrix = lil_matrix((rows_count, player_count), dtype=np.int8)
+
+        for idx, row in df.iterrows():
+            tmID, year, player = row["tmID"], row["year"], row["playerID"]
+
+            teammates = df[
+                (df["tmID"] == tmID) & (df["year"] == year) & (df["playerID"] != player) & (df["playerID"].isin(self.known_players))
+            ]["playerID"]
+
+            for teammate in teammates:
+                teammate_matrix[idx, teammate] = 1
+
+        # Convert sparse matrix to DataFrame
+        teammate_df = pd.DataFrame(
+            teammate_matrix.toarray(), columns=[f"teammate_{pid}" for pid in self.known_players]
+        )
+
+        # Merge with original DF
+        df = pd.concat([df, teammate_df], axis=1)
+
+        # Remove useless columns
+        df.drop("stint", axis=1, inplace=True)
+
+        return df
 
     @staticmethod
     def filterFeatures(df):
@@ -99,9 +127,9 @@ class PlayerStats:
         model.fit(features, target)
         return model
 
-    @staticmethod
-    def generateResult(model, input_df, encoders):
-        target_prediction = model.predict(input_df)
+    def generateResult(self, input_df):
+        filtered_df = PlayerStats.filterFeatures(input_df)
+        target_prediction = self.model.predict(filtered_df)
 
         # Build prediction DataFrame
         pred_df = pd.DataFrame(
@@ -128,13 +156,15 @@ class PlayerStats:
         )
 
         # Restore real Player IDs
-        pred_df["playerID"] = encoders["playerID"].inverse_transform(
-            input_df["playerID"]
+        pred_df["playerID"] = self.encoders["playerID"].inverse_transform(
+            input_df["playerID"].astype(int)
         )
 
         # Restore years and team IDs
         pred_df["year"] = input_df["year"]
-        pred_df["tmID"] = encoders["tmID"].inverse_transform(input_df["tmID"])
+        pred_df["tmID"] = self.encoders["tmID"].inverse_transform(
+            input_df["tmID"].astype(int)
+        )
 
         # reorder columns: playerID, year, tmID, stats
         pred_df = pred_df[
@@ -147,9 +177,8 @@ class PlayerStats:
 
         return pred_df
 
-    @staticmethod
-    def testModel(model, input_df, results):
-        prediction = model.predict(input_df)
+    def testModel(self, input_df, results):
+        prediction = self.model.predict(input_df)
         print("Mean Absolute Error: ", mean_absolute_error(results, prediction))
         print("Mean Squared Error: ", mean_squared_error(results, prediction))
         print("R Squared Score: ", r2_score(results, prediction))
@@ -164,16 +193,17 @@ def main():
     test_size = 0.1
     test_years = years[: math.ceil(len(years) * test_size)]
     test_mask = df["year"].isin(test_years)
-
-    (df, encoders) = PlayerStats.preprocess(df)
+    
     training_df = df[~test_mask]
-    model = PlayerStats.generateModel(training_df)
+    training_df.reset_index(drop=True, inplace=True)
+    model = PlayerStats(training_df)
 
     test_df = df[test_mask]
     test_df.reset_index(drop=True, inplace=True)
+    test_df = model.preprocessInput(test_df)
     features = PlayerStats.filterFeatures(test_df)
     targets = PlayerStats.filterTargets(test_df)
-    PlayerStats.testModel(model, features, targets)
+    model.testModel(features, targets)
 
 
 if __name__ == "__main__":

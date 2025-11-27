@@ -18,7 +18,7 @@ class TeamRanks:
         df = df.copy()
         self.encoders = {}
         # Convert string data to a number
-        for column in ["tmID"]:
+        for column in ["tmID", "confID"]:
             self.encoders[column] = LabelEncoder()
             df.loc[:, column] = self.encoders[column].fit_transform(
                 df[column].astype(str)
@@ -28,7 +28,7 @@ class TeamRanks:
 
     def preprocessInput(self, df):
         df = df.copy()
-        for column in ["tmID"]:
+        for column in ["tmID", "confID"]:
             df.loc[:, column] = self.encoders[column].fit_transform(
                 df[column].astype(str)
             )
@@ -83,38 +83,51 @@ class TeamRanks:
     @staticmethod
     def __convertRegressionToClassification(test_df, results):
         # Get ranks from the float `rank`
-        filtered_df = test_df[["year", "tmID"]].copy()
+        filtered_df = test_df[["year", "tmID", "confID"]].copy()
         filtered_df["rank_score"] = results
 
         years = []
         tmIDs = []
+        confIDs = []
+        rank_scores = []
+
+        years = []
+        tmIDs = []
+        confIDs = []
         rank_scores = []
 
         for year in sorted(filtered_df["year"].unique()):
-            year_results = filtered_df[(filtered_df["year"] == year)]
-            sorted_year_results = year_results.sort_values("rank_score")
-            for rank, tmID in enumerate(sorted_year_results["tmID"]):
-                years.append(year)
-                tmIDs.append(tmID)
-                rank_scores.append(rank + 1)
+            for confID in sorted(filtered_df["confID"].unique()):
+                year_results = filtered_df[
+                    (filtered_df["year"] == year) & (filtered_df["confID"] == confID)
+                ]
+                sorted_year_results = year_results.sort_values("rank_score")
+                for rank, tmID in enumerate(sorted_year_results["tmID"]):
+                    years.append(year)
+                    confIDs.append(confID)
+                    tmIDs.append(tmID)
+                    rank_scores.append(rank + 1)
 
         classification_ranks = pd.DataFrame(
             {
                 "year": years,
                 "tmID": tmIDs,
+                "confID": confIDs,
                 "rank": rank_scores,
             }
         )
 
         # Convert regression prediction into a classification prediction
         target_prediction = []
-        year_tm_test = test_df[["year", "tmID"]]
+        year_tm_test = test_df[["year", "tmID", "confID"]]
         for row in year_tm_test.iterrows():
             year = row[1]["year"]
             tmID = row[1]["tmID"]
+            confID = row[1]["confID"]
             rank = classification_ranks.loc[
                 (classification_ranks["year"] == year)
-                & (classification_ranks["tmID"] == tmID),
+                & (classification_ranks["tmID"] == tmID)
+                & (classification_ranks["confID"] == confID),
                 "rank",
             ].values[0]
             target_prediction.append(rank)
@@ -126,6 +139,9 @@ class TeamRanks:
         prediction = self.model.predict(filtered_df)
         (classification_ranks, _) = TeamRanks.__convertRegressionToClassification(
             input_df, prediction
+        )
+        classification_ranks["confID"] = self.encoders["confID"].inverse_transform(
+            classification_ranks["confID"].astype(int)
         )
         classification_ranks["tmID"] = self.encoders["tmID"].inverse_transform(
             classification_ranks["tmID"].astype(int)

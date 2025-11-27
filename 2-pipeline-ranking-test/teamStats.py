@@ -11,20 +11,20 @@ from sklearn.preprocessing import LabelEncoder
 
 class TeamStats:
     def __init__(self, training_df):
-        (training_df, encoders) = TeamStats.preprocessTraining(training_df)
-        self.encoders = encoders
+        self.encoders = {}
+        training_df = self.preprocessTraining(training_df)
         model = TeamStats.trainModel(training_df)
         self.model = model
 
-    @staticmethod
-    def preprocessTraining(training_df):
+    def preprocessTraining(self, training_df):
         df = training_df.copy()
         le = LabelEncoder()
         df["tmID"] = le.fit_transform(df["tmID"].astype(str))
-        return (df, le)
+        self.encoders = {"tmID": le}
+        return df
 
-    @staticmethod
-    def preprocessInput(input_df, encoder):
+    def preprocessInput(self, input_df):
+        print(input_df)
         team = (
             input_df.groupby(["tmID", "year"])
             .agg(
@@ -86,9 +86,9 @@ class TeamStats:
 
         team = team.round(2)
 
-        team["tmID"] = encoder.transform(team["tmID"].astype(str))
+        team["tmID"] = self.encoders["tmID"].transform(team["tmID"].astype(str))
 
-        return (team, encoder)
+        return team
 
     @staticmethod
     def filterFeatures(df):
@@ -142,9 +142,8 @@ class TeamStats:
         model.fit(X, Y)
         return model
 
-    @staticmethod
-    def generateResults(model, input_df, encoder):
-        d_pred = model.predict(input_df)
+    def generateResults(self, input_df):
+        d_pred = self.model.predict(input_df)
         df_def = pd.DataFrame(
             d_pred,
             columns=[
@@ -165,14 +164,13 @@ class TeamStats:
         df_def = df_def.round(2)
 
         df_output = pd.concat([input_df.reset_index(drop=True), df_def], axis=1)
-        df_output["tmID"] = encoder.inverse_transform(df_output["tmID"])
+        df_output["tmID"] = self.encoders["tmID"].inverse_transform(df_output["tmID"])
 
         df_output.to_csv("./outputs/predicted_team_stats.csv", index=False)
         return df_output
 
-    @staticmethod
-    def testModel(model, input_df, encoder, result_df):
-        pred = TeamStats.generateResults(model, input_df, encoder)
+    def testModel(self, input_df, result_df):
+        pred = self.generateResults(input_df)
 
         # merge predicted + real
         merged = pred.merge(result_df, on=["tmID", "year"], suffixes=("_pred", "_real"))
@@ -240,20 +238,18 @@ def main():
     ty_len = math.ceil(len(years) * test_size)
     test_years = years[:ty_len]
 
-    (processed_df, encoder) = TeamStats.preprocessTraining(df)
-    (input_df, encoder) = TeamStats.preprocessInput(input_df, encoder)
-
     training_test_mask = df["year"].isin(test_years)
-    input_test_mask = input_df["year"].isin(test_years)
+    training_df = df[~training_test_mask]
+    model = TeamStats(training_df)
 
-    training_df = processed_df[~training_test_mask]
+    input_df = model.preprocessInput(input_df)
+    input_test_mask = input_df["year"].isin(test_years)
     input_df = input_df[input_test_mask]
 
     input_df = TeamStats.filterFeatures(input_df)
     result_df = df[training_test_mask]
 
-    model = TeamStats.trainModel(training_df)
-    TeamStats.testModel(model, input_df, encoder, result_df)
+    model.testModel(input_df, result_df)
 
 
 if __name__ == "__main__":

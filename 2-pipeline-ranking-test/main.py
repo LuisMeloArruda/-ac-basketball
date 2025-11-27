@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from sklearn.metrics import classification_report
 from threading import Thread
 from playerStats import PlayerStats
 from teamRanks import TeamRanks
@@ -75,7 +76,19 @@ def test(input_df):
     for i in range(len(threads)):
         threads[i].join()
 
-    print(results)
+    predictions_df = pd.concat(results, ignore_index=True)
+    
+    predictions = predictions_df["rank"]
+    teams_df = pd.read_csv("../database/final/teams.csv")
+    actual = []
+    for _, prediction_row in predictions_df.iterrows():
+        team = prediction_row["tmID"]
+        year = prediction_row["year"]
+        rank_answer = teams_df[(teams_df["tmID"] == team) & (teams_df["year"] == year)]["rank"].values[0]
+        actual.append(rank_answer)
+    
+    print(classification_report(actual, predictions))
+    
 
 def main():
     input_df = pd.read_csv("../database/final/players_teams.csv")

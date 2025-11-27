@@ -40,10 +40,9 @@ def team_ranks(input_df, test_years):
     tr_model = TeamRanks(training_df)
     print("TeamRanks model trained!")
 
-    (tr_input, _) = TeamRanks.preprocess(input_df)
-    tr_input = TeamRanks.filterFeatures(tr_input)
+    tr_input = tr_model.preprocessInput(input_df)
     print("TeamStats results generated!")
-    return TeamRanks.generateResults(tr_model.model, tr_input, tr_model.encoders)
+    return tr_model.generateResults(tr_input)
 
 def main():
     # Simulate the input file

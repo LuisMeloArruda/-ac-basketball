@@ -24,7 +24,6 @@ class TeamStats:
         return df
 
     def preprocessInput(self, input_df):
-        print(input_df)
         team = (
             input_df.groupby(["tmID", "year"])
             .agg(

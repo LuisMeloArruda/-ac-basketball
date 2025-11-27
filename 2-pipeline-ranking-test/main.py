@@ -14,11 +14,11 @@ def player_stats(input_df, test_years):
         training_df = training_df[~(training_df["year"].isin(test_years))]
         training_df = training_df.reset_index(drop=True)
         ps_model = PlayerStats(training_df)
-        print("PlayerStats model trained!")
+        print(test_years, "PlayerStats model trained!")
     
         ps_input = ps_model.preprocessInput(input_df)
         ps_output = ps_model.generateResult(ps_input)
-        print("PlayerStats results generated!")
+        print(test_years, "PlayerStats results generated!")
         return ps_output
     # else:
     #     print("[CACHED] PlayerStats")
@@ -30,12 +30,12 @@ def team_stats(input_df, test_years):
         training_df = pd.read_csv("../database/final/teams.csv")
         training_df = training_df[~training_df["year"].isin(test_years)]
         ts_model = TeamStats(training_df)
-        print("TeamStats model trained!")
+        print(test_years, "TeamStats model trained!")
     
         ts_input = ts_model.preprocessInput(input_df)
         ts_input = TeamStats.filterFeatures(ts_input)
         ts_output = ts_model.generateResults(ts_input)
-        print("TeamStats results generated!")
+        print(test_years, "TeamStats results generated!")
         return ts_output
     # else:
     #     print("[CACHED] TeamStats")
@@ -46,44 +46,51 @@ def team_ranks(input_df, test_years):
     training_df = pd.read_csv("../database/final/teams.csv")
     training_df = training_df[~training_df["year"].isin(test_years)]
     tr_model = TeamRanks(training_df)
-    print("TeamRanks model trained!")
+    print(test_years, "TeamRanks model trained!")
 
     tr_input = tr_model.preprocessInput(input_df)
     tr_output = tr_model.generateResults(tr_input)
-    print("TeamStats results generated!")
+    print(test_years, "TeamStats results generated!")
     return tr_output
 
 
-def generate_results(input_df, test_years):
+def generate_results(player_df, team_df, test_years):
     # Step 1: Generate player stats from teammates
-    ps_output = player_stats(input_df, test_years)
+    ps_output = player_stats(player_df, test_years)
+    
     # Step 2: Generate team stats from player stats
     ts_output = team_stats(ps_output, test_years)
+    
     # Step 3: Generate team ranks from team stats
-    tr_output = team_ranks(ts_output, test_years)
+    tr_input = pd.merge(ts_output, team_df, on=["tmID", "year"])
+    tr_output = team_ranks(tr_input, test_years)
     return tr_output
 
 
-def test_one_year(input_df, year, thread, results):
-    print("Year: ", year)
-
+def test_one_year(player_df, team_df, year, thread, results):
     # Simulate the input file
     test_years = [year]
-    this_input_df = input_df[["playerID", "year", "tmID", "stint"]]
-    this_input_df = this_input_df[this_input_df["year"].isin(test_years)]
-    this_input_df = this_input_df.reset_index(drop=True)
-    print("Input loaded!")
+    
+    this_player_df = player_df[["playerID", "year", "tmID", "stint"]]
+    this_player_df = this_player_df[this_player_df["year"].isin(test_years)]
+    this_player_df = this_player_df.reset_index(drop=True)
+    
+    this_team_df = team_df[["year", "tmID", "confID"]]
+    this_team_df = this_team_df[this_team_df["year"].isin(test_years)]
+    this_team_df = this_team_df.reset_index(drop=True)
 
-    results[thread] = generate_results(this_input_df, test_years)
+    print(test_years, "Input loaded!")
+
+    results[thread] = generate_results(this_player_df, this_team_df, test_years)
 
 
-def test(input_df):
-    years = sorted(input_df["year"].unique())
+def test(player_df, team_df):
+    years = sorted(player_df["year"].unique())
     threads = [None] * len(years)
     results = [None] * len(years)
 
     for i in range(len(threads)):
-        threads[i] = Thread(target=test_one_year, args=(input_df, years[i], i, results))
+        threads[i] = Thread(target=test_one_year, args=(player_df, team_df, years[i], i, results))
         threads[i].start()
 
     for i in range(len(threads)):
@@ -106,8 +113,9 @@ def test(input_df):
 
 
 def main():
-    input_df = pd.read_csv("../database/final/players_teams.csv")
-    test(input_df)
+    player_df = pd.read_csv("../database/final/players_teams.csv")
+    team_df = pd.read_csv("../database/final/teams.csv")
+    test(player_df, team_df)
 
 
 if __name__ == "__main__":

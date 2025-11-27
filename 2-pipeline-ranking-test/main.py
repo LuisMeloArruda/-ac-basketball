@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from threading import Thread
 from playerStats import PlayerStats
 from teamRanks import TeamRanks
 from teamStats import TeamStats
@@ -50,22 +51,31 @@ def generate_results(input_df, test_years):
     tr_output = team_ranks(ts_output, test_years)       # Step 3: Generate team ranks from team stats
     return tr_output
 
-def test(input_df):
-    output = pd.DataFrame()
-    for year in range(1, 11):
-        print("Year: ", year)
-        
-        # Simulate the input file
-        test_years = [year]
-        this_input_df = input_df[["playerID", "year", "tmID", "stint"]]
-        this_input_df = this_input_df[this_input_df["year"].isin(test_years)]
-        this_input_df = this_input_df.reset_index(drop=True)
-        print("Input loaded!")
-        
-        this_year_output = generate_results(this_input_df, test_years)
-        output = pd.concat([output, this_year_output], ignore_index=True)
+def test_one_year(input_df, year, thread, results):
+    print("Year: ", year)
+    
+    # Simulate the input file
+    test_years = [year]
+    this_input_df = input_df[["playerID", "year", "tmID", "stint"]]
+    this_input_df = this_input_df[this_input_df["year"].isin(test_years)]
+    this_input_df = this_input_df.reset_index(drop=True)
+    print("Input loaded!")
+    
+    results[thread] = generate_results(this_input_df, test_years)
 
-    print(output)
+def test(input_df):
+    years = sorted(input_df["year"].unique())
+    threads = [None] * len(years)
+    results = [None] * len(years)
+    
+    for i in range(len(threads)):
+        threads[i] = Thread(target=test_one_year, args=(input_df, years[i], i, results))
+        threads[i].start()
+        
+    for i in range(len(threads)):
+        threads[i].join()
+
+    print(results)
 
 def main():
     input_df = pd.read_csv("../database/final/players_teams.csv")

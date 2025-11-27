@@ -1,10 +1,12 @@
 import os
-import pandas as pd
-from sklearn.metrics import classification_report
 from threading import Thread
+
+import pandas as pd
 from playerStats import PlayerStats
+from sklearn.metrics import classification_report
 from teamRanks import TeamRanks
 from teamStats import TeamStats
+
 
 def player_stats(input_df, test_years):
     # if not os.path.exists("outputs/predicted_players_stats.csv"):
@@ -15,12 +17,14 @@ def player_stats(input_df, test_years):
         print("PlayerStats model trained!")
     
         ps_input = ps_model.preprocessInput(input_df)
+        ps_output = ps_model.generateResult(ps_input)
         print("PlayerStats results generated!")
-        return ps_model.generateResult(ps_input)
+        return ps_output
     # else:
     #     print("[CACHED] PlayerStats")
     #     return pd.read_csv("outputs/predicted_players_stats.csv")
-        
+
+
 def team_stats(input_df, test_years):
     # if not os.path.exists("outputs/predicted_team_stats.csv"):
         training_df = pd.read_csv("../database/final/teams.csv")
@@ -30,12 +34,14 @@ def team_stats(input_df, test_years):
     
         ts_input = ts_model.preprocessInput(input_df)
         ts_input = TeamStats.filterFeatures(ts_input)
+        ts_output = ts_model.generateResults(ts_input)
         print("TeamStats results generated!")
-        return ts_model.generateResults(ts_input)
+        return ts_output
     # else:
     #     print("[CACHED] TeamStats")
     #     return pd.read_csv("outputs/predicted_team_stats.csv")
-        
+
+
 def team_ranks(input_df, test_years):
     training_df = pd.read_csv("../database/final/teams.csv")
     training_df = training_df[~training_df["year"].isin(test_years)]
@@ -43,56 +49,66 @@ def team_ranks(input_df, test_years):
     print("TeamRanks model trained!")
 
     tr_input = tr_model.preprocessInput(input_df)
+    tr_output = tr_model.generateResults(tr_input)
     print("TeamStats results generated!")
-    return tr_model.generateResults(tr_input)
-    
-def generate_results(input_df, test_years):
-    ps_output = player_stats(input_df, test_years)      # Step 1: Generate player stats from teammates
-    ts_output = team_stats(ps_output, test_years)       # Step 2: Generate team stats from player stats
-    tr_output = team_ranks(ts_output, test_years)       # Step 3: Generate team ranks from team stats
     return tr_output
+
+
+def generate_results(input_df, test_years):
+    # Step 1: Generate player stats from teammates
+    ps_output = player_stats(input_df, test_years)
+    # Step 2: Generate team stats from player stats
+    ts_output = team_stats(ps_output, test_years)
+    # Step 3: Generate team ranks from team stats
+    tr_output = team_ranks(ts_output, test_years)
+    return tr_output
+
 
 def test_one_year(input_df, year, thread, results):
     print("Year: ", year)
-    
+
     # Simulate the input file
     test_years = [year]
     this_input_df = input_df[["playerID", "year", "tmID", "stint"]]
     this_input_df = this_input_df[this_input_df["year"].isin(test_years)]
     this_input_df = this_input_df.reset_index(drop=True)
     print("Input loaded!")
-    
+
     results[thread] = generate_results(this_input_df, test_years)
+
 
 def test(input_df):
     years = sorted(input_df["year"].unique())
     threads = [None] * len(years)
     results = [None] * len(years)
-    
+
     for i in range(len(threads)):
         threads[i] = Thread(target=test_one_year, args=(input_df, years[i], i, results))
         threads[i].start()
-        
+
     for i in range(len(threads)):
         threads[i].join()
 
     predictions_df = pd.concat(results, ignore_index=True)
-    
+
     predictions = predictions_df["rank"]
     teams_df = pd.read_csv("../database/final/teams.csv")
     actual = []
     for _, prediction_row in predictions_df.iterrows():
         team = prediction_row["tmID"]
         year = prediction_row["year"]
-        rank_answer = teams_df[(teams_df["tmID"] == team) & (teams_df["year"] == year)]["rank"].values[0]
+        rank_answer = teams_df[(teams_df["tmID"] == team) & (teams_df["year"] == year)][
+            "rank"
+        ].values[0]
         actual.append(rank_answer)
-    
+
     print(classification_report(actual, predictions))
-    
+
 
 def main():
     input_df = pd.read_csv("../database/final/players_teams.csv")
     test(input_df)
+
 
 if __name__ == "__main__":
     main()

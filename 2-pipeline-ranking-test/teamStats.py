@@ -165,7 +165,6 @@ class TeamStats:
         df_output = pd.concat([input_df.reset_index(drop=True), df_def], axis=1)
         df_output["tmID"] = self.encoders["tmID"].inverse_transform(df_output["tmID"])
 
-        df_output.to_csv("./outputs/predicted_team_stats.csv", index=False)
         return df_output
 
     def testModel(self, input_df, result_df):

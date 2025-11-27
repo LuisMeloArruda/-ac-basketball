@@ -22,7 +22,9 @@ class PlayerStats:
         # Convert string data to a number
         for column in ["playerID", "tmID"]:
             self.encoders[column] = LabelEncoder()
-            df.loc[:, column] = self.encoders[column].fit_transform(df[column].astype(str))
+            df.loc[:, column] = self.encoders[column].fit_transform(
+                df[column].astype(str)
+            )
 
         # Create Sparse Multi-Hot teammate matrix
         self.known_players = df["playerID"].unique()
@@ -43,7 +45,8 @@ class PlayerStats:
 
         # Convert sparse matrix to DataFrame
         teammate_df = pd.DataFrame(
-            teammate_matrix.toarray(), columns=[f"teammate_{pid}" for pid in self.known_players]
+            teammate_matrix.toarray(),
+            columns=[f"teammate_{pid}" for pid in self.known_players],
         )
 
         # Merge with original DF
@@ -53,11 +56,13 @@ class PlayerStats:
         df.drop("stint", axis=1, inplace=True)
 
         return df
-    
+
     def preprocessInput(self, df):
         # Convert string data to a number
         for column in ["playerID", "tmID"]:
-            df.loc[:, column] = self.encoders[column].fit_transform(df[column].astype(str))
+            df.loc[:, column] = self.encoders[column].fit_transform(
+                df[column].astype(str)
+            )
 
         # Create Sparse Multi-Hot teammate matrix
         player_count = len(self.known_players)
@@ -69,7 +74,10 @@ class PlayerStats:
             tmID, year, player = row["tmID"], row["year"], row["playerID"]
 
             teammates = df[
-                (df["tmID"] == tmID) & (df["year"] == year) & (df["playerID"] != player) & (df["playerID"].isin(self.known_players))
+                (df["tmID"] == tmID)
+                & (df["year"] == year)
+                & (df["playerID"] != player)
+                & (df["playerID"].isin(self.known_players))
             ]["playerID"]
 
             for teammate in teammates:
@@ -77,7 +85,8 @@ class PlayerStats:
 
         # Convert sparse matrix to DataFrame
         teammate_df = pd.DataFrame(
-            teammate_matrix.toarray(), columns=[f"teammate_{pid}" for pid in self.known_players]
+            teammate_matrix.toarray(),
+            columns=[f"teammate_{pid}" for pid in self.known_players],
         )
 
         # Merge with original DF
@@ -172,9 +181,6 @@ class PlayerStats:
             + [c for c in pred_df.columns if c not in ["playerID", "year", "tmID"]]
         ]
 
-        pred_df.to_csv("outputs/predicted_players_stats.csv", index=False)
-        print("\nSaved predicted_players_stats.csv")
-
         return pred_df
 
     def testModel(self, input_df, results):
@@ -193,7 +199,7 @@ def main():
     test_size = 0.1
     test_years = years[: math.ceil(len(years) * test_size)]
     test_mask = df["year"].isin(test_years)
-    
+
     training_df = df[~test_mask]
     training_df.reset_index(drop=True, inplace=True)
     model = PlayerStats(training_df)

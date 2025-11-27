@@ -11,6 +11,12 @@ from sklearn.preprocessing import LabelEncoder
 
 
 class PlayerStats:
+    def __init__(self, training_df):
+        (training_df, encoders) = PlayerStats.preprocess(training_df)
+        self.encoders = encoders
+        model = PlayerStats.generateModel(training_df)
+        self.model = model
+
     @staticmethod
     def preprocess(df):
         # Convert string data to a number
@@ -138,6 +144,8 @@ class PlayerStats:
 
         pred_df.to_csv("outputs/predicted_players_stats.csv", index=False)
         print("\nSaved predicted_players_stats.csv")
+
+        return pred_df
 
     @staticmethod
     def testModel(model, input_df, results):

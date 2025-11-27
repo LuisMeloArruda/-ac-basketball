@@ -8,6 +8,12 @@ from sklearn.svm import NuSVR
 
 
 class TeamRanks:
+    def __init__(self, training_df):
+        (training_df, encoders) = TeamRanks.preprocess(training_df)
+        self.encoders = encoders
+        model = TeamRanks.trainModel(training_df)
+        self.model = model
+    
     @staticmethod
     def preprocess(df):
         encoders = {}

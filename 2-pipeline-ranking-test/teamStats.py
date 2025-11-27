@@ -10,6 +10,12 @@ from sklearn.preprocessing import LabelEncoder
 
 
 class TeamStats:
+    def __init__(self, training_df):
+        (training_df, encoders) = TeamStats.preprocessTraining(training_df)
+        self.encoders = encoders
+        model = TeamStats.trainModel(training_df)
+        self.model = model
+
     @staticmethod
     def preprocessTraining(training_df):
         df = training_df.copy()

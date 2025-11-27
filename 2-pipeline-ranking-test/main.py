@@ -1,68 +1,54 @@
-import math
-import random
 import pandas as pd
-from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
-from sklearn.preprocessing import LabelEncoder
+from playerStats import PlayerStats
+from teamRanks import TeamRanks
+from teamStats import TeamStats
 
-# 1. Load data
 
-# TODO: Desnormalize data of all .csv files into one DataFrame
-teams = pd.read_csv("../database/cleaned/teams.csv")
-players_teams = pd.read_csv("../database/cleaned/players_teams.csv")
-players = pd.read_csv("../database/cleaned/players.csv")
-df = players_teams.merge(teams, on='tmID').groupby('tmID').agg(list)
-df.to_csv("test.csv")
-print(df.head())
-print("test")
+def main():
+    # Simulate the input file
+    test_years = [10]
+    input_df = pd.read_csv("../database/final/players_teams.csv")
+    input_df = input_df[["playerID", "year", "tmID", "stint"]]
+    input_df = input_df[input_df["year"].isin(test_years)]
+    input_df = input_df.reset_index(drop=True)
+    print("Input loaded!")
 
-# 2. Preprocessing
-for column in df:
-    if df.dtypes[column] == object:
-        # TODO: is necessary to hold the encoder for each column?
-        label_encoder = LabelEncoder()
-        df[column] = label_encoder.fit_transform(df[column])
+    # Step 1: Generate player stats from teammates
+    training_df = pd.read_csv("../database/final/players_teams.csv")
+    training_df = training_df[~(training_df["year"].isin(test_years))]
+    training_df = training_df.reset_index(drop=True)
+    ps_model = PlayerStats(training_df)
+    print("PlayerStats model trained!")
 
-# TODO: Improve preprocessing
+    (ps_input, _) = PlayerStats.preprocess(input_df)
+    ps_input = PlayerStats.filterFeatures(ps_input)
+    ps_output = PlayerStats.generateResult(ps_model.model, ps_input, ps_model.encoders)
+    print("PlayerStats results generated!")
 
-# 3. Pipeline
+    # Step 2: Generate team stats from player stats
+    training_df = pd.read_csv("../database/final/teams.csv")
+    training_df = training_df[~training_df["year"].isin(test_years)]
+    ts_model = TeamStats(training_df)
+    print("TeamStats model trained!")
 
-# TODO: Explore different models
-pipeline = Pipeline(steps=[
-    ('model', RandomForestClassifier(random_state=42))
-])
+    (ts_input, _) = TeamStats.preprocessInput(ps_output, ts_model.encoders)
+    ts_input = TeamStats.filterFeatures(ts_input)
+    ts_output = TeamStats.generateResults(ts_model.model, ts_input, ts_model.encoders)
+    print("TeamStats results generated!")
 
-# 4. Separate traning and test data
+    # Step 3: Generate team ranks from team stats
+    training_df = pd.read_csv("../database/final/teams.csv")
+    training_df = training_df[~training_df["year"].isin(test_years)]
+    tr_model = TeamRanks(training_df)
+    print("TeamRanks model trained!")
 
-# 4.1. Select years for testing
-years = df['year'].unique().tolist()
-years = random.sample(years, len(years))
-test_size = 0.2
-ty_len = math.ceil(len(years) * test_size)
-test_years = years[:ty_len]
+    (tr_input, _) = TeamRanks.preprocess(ts_output)
+    tr_input = TeamRanks.filterFeatures(tr_input)
+    tr_output = TeamRanks.generateResults(tr_model.model, tr_input, tr_model.encoders)
+    print("TeamStats results generated!")
 
-# 4.2. Divide train and test data 
-features_train = []
-features_test = []
-target_train = []
-target_test = []
+    print(tr_output)
 
-for line in df.iterrows():
-    line = line[1]
-    target_line = line["rank"]
-    feature_line = line.drop(columns="rank")
-    if line["year"] in test_years:
-        target_test.append(target_line)
-        features_test.append(feature_line)
-    else:
-        target_train.append(target_line)
-        features_train.append(feature_line)
 
-# 5. Train model
-pipeline.fit(features_train, target_train)
-
-# 6. Test model
-target_prediction = pipeline.predict(features_test)
-print(classification_report(target_test, target_prediction))
+if __name__ == "__main__":
+    main()

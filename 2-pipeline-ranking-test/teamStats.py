@@ -212,10 +212,6 @@ class TeamStats:
 
             diff[c + "_err_percent"] = percent_err.round(2)
 
-        diff.to_csv("outputs/team_stats_diff_percent.csv", index=False)
-        print("saved ./outputs/predicted_team_stats.csv")
-        print(diff)
-
         # model-wide metrics
         y_true = merged[[c + "_real" for c in cols]].values
         y_pred = merged[[c + "_pred" for c in cols]].values

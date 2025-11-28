@@ -4,30 +4,37 @@ import random
 import numpy as np
 import pandas as pd
 from scipy.sparse import lil_matrix
-from sklearn.ensemble import RandomForestRegressor
+from sklearn import linear_model
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.preprocessing import LabelEncoder
 
 
 class PlayerStats:
-    def __init__(self, training_df):
-        self.encoders = {}
+    def __init__(self, training_df, encoders):
+        training_df = training_df.copy()
+        self.encoders = encoders
         self.known_players = []
         training_df = self.preprocessTraining(training_df)
         model = PlayerStats.generateModel(training_df)
         self.model = model
 
+    @staticmethod
+    def generateEncoders(df):
+        return {
+            "playerID": LabelEncoder().fit(df["playerID"].unique().astype(str)),
+            "tmID": LabelEncoder().fit(df["tmID"].unique().astype(str)),
+        }
+
     def preprocessTraining(self, df):
+        df = df.copy()
         # Convert string data to a number
         for column in ["playerID", "tmID"]:
-            self.encoders[column] = LabelEncoder()
-            df.loc[:, column] = self.encoders[column].fit_transform(
-                df[column].astype(str)
-            )
+            df[column] = self.encoders[column].transform(df[column].astype(str))
 
         # Create Sparse Multi-Hot teammate matrix
         self.known_players = df["playerID"].unique()
+        playerID_to_idx = {id: idx for (idx, id) in enumerate(self.known_players)}
         player_count = len(self.known_players)
         rows_count = df.shape[0]
 
@@ -41,7 +48,7 @@ class PlayerStats:
             ]["playerID"]
 
             for teammate in teammates:
-                teammate_matrix[idx, teammate] = 1
+                teammate_matrix[idx, playerID_to_idx[teammate]] = 1
 
         # Convert sparse matrix to DataFrame
         teammate_df = pd.DataFrame(
@@ -55,17 +62,19 @@ class PlayerStats:
         # Remove useless columns
         df.drop("stint", axis=1, inplace=True)
 
+        df.to_csv("preprocessedTraining.csv")
+
         return df
 
     def preprocessInput(self, df):
+        df = df.copy()
         # Convert string data to a number
         for column in ["playerID", "tmID"]:
-            df.loc[:, column] = self.encoders[column].fit_transform(
-                df[column].astype(str)
-            )
+            df[column] = self.encoders[column].transform(df[column].astype(str))
 
         # Create Sparse Multi-Hot teammate matrix
         player_count = len(self.known_players)
+        playerID_to_idx = {id: idx for (idx, id) in enumerate(self.known_players)}
         rows_count = df.shape[0]
 
         teammate_matrix = lil_matrix((rows_count, player_count), dtype=np.int8)
@@ -81,7 +90,7 @@ class PlayerStats:
             ]["playerID"]
 
             for teammate in teammates:
-                teammate_matrix[idx, teammate] = 1
+                teammate_matrix[idx, playerID_to_idx[teammate]] = 1
 
         # Convert sparse matrix to DataFrame
         teammate_df = pd.DataFrame(
@@ -94,6 +103,8 @@ class PlayerStats:
 
         # Remove useless columns
         df.drop("stint", axis=1, inplace=True)
+
+        df.to_csv("preprocessedTest.csv")
 
         return df
 
@@ -132,7 +143,7 @@ class PlayerStats:
     def generateModel(training_df):
         features = PlayerStats.filterFeatures(training_df)
         target = PlayerStats.filterTargets(training_df)
-        model = MultiOutputRegressor(RandomForestRegressor(), n_jobs=1)
+        model = MultiOutputRegressor(linear_model.ElasticNet(), n_jobs=1)
         model.fit(features, target)
         return model
 
@@ -202,7 +213,9 @@ def main():
 
     training_df = df[~test_mask]
     training_df.reset_index(drop=True, inplace=True)
-    model = PlayerStats(training_df)
+    training_df.to_csv("training_df.csv")
+    encoders = PlayerStats.generateEncoders(df)
+    model = PlayerStats(training_df, encoders)
 
     test_df = df[test_mask]
     test_df.reset_index(drop=True, inplace=True)

@@ -13,7 +13,9 @@ def player_stats(input_df, test_years):
         training_df = pd.read_csv("../database/final/players_teams.csv")
         training_df = training_df[~(training_df["year"].isin(test_years))]
         training_df = training_df.reset_index(drop=True)
-        ps_model = PlayerStats(training_df)
+        encoders_df = pd.concat([training_df, input_df], ignore_index=True)
+        encoders = PlayerStats.generateEncoders(encoders_df)
+        ps_model = PlayerStats(training_df, encoders)
         print(test_years, "PlayerStats model trained!")
     
         ps_input = ps_model.preprocessInput(input_df)

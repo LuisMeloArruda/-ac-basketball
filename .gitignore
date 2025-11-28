@@ -1,5 +1,6 @@
 # Python
 .venv
+__pycache__/
 
 # Nix
 .nix/
@@ -8,3 +9,6 @@
 
 # vscode
 .vscode
+
+# Project
+outputs/

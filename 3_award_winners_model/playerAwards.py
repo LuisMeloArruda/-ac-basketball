@@ -148,7 +148,6 @@ class PlayerAwards:
         valid_awards_year = set(zip(true_df["award"], true_df["year"]))
         for idx, row in classification_df.iterrows():
             award_year = (row["award"], row["year"])
-            print(award_year)
             if award_year not in valid_awards_year:
                 classification_df = classification_df.drop(idx)
         classification_df.reset_index(drop=True)

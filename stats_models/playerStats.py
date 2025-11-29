@@ -8,6 +8,7 @@ from sklearn import linear_model
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.preprocessing import LabelEncoder
+from sklearn.svm import NuSVR
 
 
 class PlayerStats:
@@ -28,36 +29,59 @@ class PlayerStats:
 
     def preprocessTraining(self, df):
         df = df.copy()
+        
         # Convert string data to a number
         for column in ["playerID", "tmID"]:
             df[column] = self.encoders[column].transform(df[column].astype(str))
-
-        # Create Sparse Multi-Hot teammate matrix
+            
+        # Encode teammates in binary
         self.known_players = df["playerID"].unique()
         playerID_to_idx = {id: idx for (idx, id) in enumerate(self.known_players)}
-        player_count = len(self.known_players)
         rows_count = df.shape[0]
-
-        teammate_matrix = lil_matrix((rows_count, player_count), dtype=np.int8)
-
+        teammates_column = [0] * rows_count
+        
         for idx, row in df.iterrows():
             tmID, year, player = row["tmID"], row["year"], row["playerID"]
 
             teammates = df[
                 (df["tmID"] == tmID) & (df["year"] == year) & (df["playerID"] != player)
             ]["playerID"]
-
+            
+            teammates_number = 0
+            
             for teammate in teammates:
-                teammate_matrix[idx, playerID_to_idx[teammate]] = 1
+                teammates_number |= 1 << playerID_to_idx[teammate]
 
-        # Convert sparse matrix to DataFrame
-        teammate_df = pd.DataFrame(
-            teammate_matrix.toarray(),
-            columns=[f"teammate_{pid}" for pid in self.known_players],
-        )
+            teammates_column[idx] = teammates_number
 
-        # Merge with original DF
-        df = pd.concat([df, teammate_df], axis=1)
+        df["teammates"] = teammates_column
+
+        # # Create Sparse Multi-Hot teammate matrix
+        # self.known_players = df["playerID"].unique()
+        # playerID_to_idx = {id: idx for (idx, id) in enumerate(self.known_players)}
+        # player_count = len(self.known_players)
+        # rows_count = df.shape[0]
+
+        # teammate_matrix = lil_matrix((rows_count, player_count), dtype=np.int8)
+
+        # for idx, row in df.iterrows():
+        #     tmID, year, player = row["tmID"], row["year"], row["playerID"]
+
+        #     teammates = df[
+        #         (df["tmID"] == tmID) & (df["year"] == year) & (df["playerID"] != player)
+        #     ]["playerID"]
+
+        #     for teammate in teammates:
+        #         teammate_matrix[idx, playerID_to_idx[teammate]] = 1
+
+        # # Convert sparse matrix to DataFrame
+        # teammate_df = pd.DataFrame(
+        #     teammate_matrix.toarray(),
+        #     columns=[f"teammate_{pid}" for pid in self.known_players],
+        # )
+
+        # # Merge with original DF
+        # df = pd.concat([df, teammate_df], axis=1)
 
         # Remove useless columns
         df.drop("stint", axis=1, inplace=True)
@@ -72,34 +96,56 @@ class PlayerStats:
         for column in ["playerID", "tmID"]:
             df[column] = self.encoders[column].transform(df[column].astype(str))
 
-        # Create Sparse Multi-Hot teammate matrix
-        player_count = len(self.known_players)
+        # Encode teammates in binary
+        self.known_players = df["playerID"].unique()
         playerID_to_idx = {id: idx for (idx, id) in enumerate(self.known_players)}
         rows_count = df.shape[0]
-
-        teammate_matrix = lil_matrix((rows_count, player_count), dtype=np.int8)
-
+        teammates_column = [0] * rows_count
+        
         for idx, row in df.iterrows():
             tmID, year, player = row["tmID"], row["year"], row["playerID"]
 
             teammates = df[
-                (df["tmID"] == tmID)
-                & (df["year"] == year)
-                & (df["playerID"] != player)
-                & (df["playerID"].isin(self.known_players))
+                (df["tmID"] == tmID) & (df["year"] == year) & (df["playerID"] != player)
             ]["playerID"]
-
+            
+            teammates_number = 0
+            
             for teammate in teammates:
-                teammate_matrix[idx, playerID_to_idx[teammate]] = 1
+                teammates_number |= 1 << playerID_to_idx[teammate]
 
-        # Convert sparse matrix to DataFrame
-        teammate_df = pd.DataFrame(
-            teammate_matrix.toarray(),
-            columns=[f"teammate_{pid}" for pid in self.known_players],
-        )
+            teammates_column[idx] = teammates_number
 
-        # Merge with original DF
-        df = pd.concat([df, teammate_df], axis=1)
+        df["teammates"] = teammates_column
+
+        # # Create Sparse Multi-Hot teammate matrix
+        # player_count = len(self.known_players)
+        # playerID_to_idx = {id: idx for (idx, id) in enumerate(self.known_players)}
+        # rows_count = df.shape[0]
+
+        # teammate_matrix = lil_matrix((rows_count, player_count), dtype=np.int8)
+
+        # for idx, row in df.iterrows():
+        #     tmID, year, player = row["tmID"], row["year"], row["playerID"]
+
+        #     teammates = df[
+        #         (df["tmID"] == tmID)
+        #         & (df["year"] == year)
+        #         & (df["playerID"] != player)
+        #         & (df["playerID"].isin(self.known_players))
+        #     ]["playerID"]
+
+        #     for teammate in teammates:
+        #         teammate_matrix[idx, playerID_to_idx[teammate]] = 1
+
+        # # Convert sparse matrix to DataFrame
+        # teammate_df = pd.DataFrame(
+        #     teammate_matrix.toarray(),
+        #     columns=[f"teammate_{pid}" for pid in self.known_players],
+        # )
+
+        # # Merge with original DF
+        # df = pd.concat([df, teammate_df], axis=1)
 
         # Remove useless columns
         df.drop("stint", axis=1, inplace=True)
@@ -110,10 +156,7 @@ class PlayerStats:
 
     @staticmethod
     def filterFeatures(df):
-        teammate_columns = [
-            df_col for df_col in df.columns if df_col.startswith("teammate_")
-        ]
-        return df[["playerID", "tmID"] + teammate_columns]
+        return df[["playerID", "tmID", "teammates"]]
 
     @staticmethod
     def filterTargets(df):
@@ -143,7 +186,7 @@ class PlayerStats:
     def generateModel(training_df):
         features = PlayerStats.filterFeatures(training_df)
         target = PlayerStats.filterTargets(training_df)
-        model = MultiOutputRegressor(linear_model.ElasticNet(), n_jobs=1)
+        model = MultiOutputRegressor(NuSVR(nu=0.27), n_jobs=1)
         model.fit(features, target)
         return model
 
@@ -213,7 +256,6 @@ def main():
 
     training_df = df[~test_mask]
     training_df.reset_index(drop=True, inplace=True)
-    training_df.to_csv("training_df.csv")
     encoders = PlayerStats.generateEncoders(df)
     model = PlayerStats(training_df, encoders)
 

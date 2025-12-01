@@ -9,7 +9,7 @@ os.makedirs(FINAL_FOLDER, exist_ok=True)
 
 columns_to_remove = {
     "players_teams": ["lgID"],
-    "players": ["collegeOther", "firstseason", "lastseason", "deathDate", "birthDate"],
+    "players": ["collegeOther", "firstseason", "lastseason", "deathDate"],
     "awards_players": ["lgID"],
     "series_post": ["lgIDWinner", "lgIDLoser"],
     "teams_post": ["lgID"],

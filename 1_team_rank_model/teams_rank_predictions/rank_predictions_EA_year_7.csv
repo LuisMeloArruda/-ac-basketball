@@ -1,0 +1,7 @@
+tmID,year,score,rank_pred,rank
+CON,7,1.752,1,1
+DET,7,1.84,2,2
+IND,7,2.13,3,3
+CHA,7,5.174,4,6
+NYL,7,5.478,5,5
+WAS,7,5.524,6,4

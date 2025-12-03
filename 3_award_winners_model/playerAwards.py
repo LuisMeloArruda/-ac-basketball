@@ -11,11 +11,14 @@ from sklearn.svm import NuSVR
 
 
 class PlayerAwards:
-    def __init__(self, players_df, awards_df):
+    def __init__(self, players_df, awards_df, player_encoder):
         players_df = players_df.copy()
         awards_df = awards_df.copy()
-        self.encoders = {}
-        training_df = self.preprocess(players_df, awards_df)
+        self.encoders = {
+            "playerID": player_encoder,
+            "award": LabelEncoder().fit(PlayerAwards.validAwards()),
+        }
+        training_df = self.preprocessTraining(players_df, awards_df)
         model = PlayerAwards.trainModel(training_df)
         self.model = model
 
@@ -32,10 +35,8 @@ class PlayerAwards:
             "WNBA Final Most Valuable Player",
         ]
 
-    def preprocess(self, players_df, awards_df):
+    def preprocessTraining(self, players_df, awards_df):
         # Convert strings to categorical numbers
-        self.encoders["award"] = LabelEncoder().fit(PlayerAwards.validAwards())
-        self.encoders["playerID"] = LabelEncoder().fit(players_df["playerID"])
         awards = self.encoders["award"].transform(PlayerAwards.validAwards())
         awards_df["award"] = self.encoders["award"].transform(awards_df["award"])
         awards_df["playerID"] = self.encoders["playerID"].transform(awards_df["playerID"])
@@ -65,6 +66,11 @@ class PlayerAwards:
         df = pd.concat([players_df, matrix_df], axis=1)
         
         return df
+        
+    def preprocessTest(self, players_df):
+        players_df["playerID"] = self.encoders["playerID"].transform(players_df["playerID"])
+        return players_df
+
 
     @staticmethod
     def filterFeatures(df):
@@ -102,9 +108,8 @@ class PlayerAwards:
         model.fit(features, target)
         return model
 
-    @staticmethod
-    def __convertRegressionToClassification(test_df, prediction_array):
-        awards = [col for col in test_df.columns if col.startswith("award_")]
+    def convertRegressionToClassification(self, test_df, prediction_array):
+        awards = [f"award_{self.encoders["award"].transform([name])[0]}" for name in PlayerAwards.validAwards()]
         prediction_df = pd.DataFrame(prediction_array, columns=awards)
         df = pd.concat([test_df[["playerID", "year"]], prediction_df], axis=1)
         years = df["year"].unique()
@@ -123,18 +128,20 @@ class PlayerAwards:
                 
                 year_col.append(year)
                 award_col.append(int(award.replace("award_", "")))
-                player_col.append(winner_player)
+                player_col.append(int(winner_player))
         
-        return pd.DataFrame({
+        result =  pd.DataFrame({
             "playerID": player_col,
             "award": award_col,
             "year": year_col,
         })
+                
+        return result
 
     def generateResults(self, input_df):
         filtered_df = PlayerAwards.filterFeatures(input_df)
         prediction = self.model.predict(filtered_df)
-        classification_df = self.__convertRegressionToClassification(input_df, prediction)
+        classification_df = self.convertRegressionToClassification(input_df, prediction)
         for column in ["playerID", "award"]:
             classification_df[column] = self.encoders[column].inverse_transform(classification_df[column])
         return classification_df
@@ -142,7 +149,7 @@ class PlayerAwards:
     def testModel(self, test_df, true_df):
         input_df = PlayerAwards.filterFeatures(test_df)
         prediction = self.model.predict(input_df)
-        classification_df = self.__convertRegressionToClassification(test_df, prediction)
+        classification_df = self.convertRegressionToClassification(test_df, prediction)
         
         # Remove awards not given in the true_df
         valid_awards_year = set(zip(true_df["award"], true_df["year"]))
@@ -173,11 +180,12 @@ def main():
 
     training_players_df = players_df[~player_test_mask].reset_index(drop=True)
     training_awards_df = awards_df[~awards_test_mask].reset_index(drop=True)
-    model = PlayerAwards(training_players_df, training_awards_df)
+    player_encoder = LabelEncoder().fit(players_df["playerID"])
+    model = PlayerAwards(training_players_df, training_awards_df, player_encoder)
 
     test_players_df = players_df[player_test_mask].reset_index(drop=True)
     test_awards_df = awards_df[awards_test_mask].reset_index(drop=True)
-    test_df = model.preprocess(test_players_df, test_awards_df)
+    test_df = model.preprocessTraining(test_players_df, test_awards_df)
     model.testModel(test_df, test_awards_df)
 
 

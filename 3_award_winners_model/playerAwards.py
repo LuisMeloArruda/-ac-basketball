@@ -4,6 +4,7 @@ import random
 import numpy as np
 import pandas as pd
 from scipy.sparse import lil_matrix
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import classification_report
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.preprocessing import LabelEncoder
@@ -104,7 +105,13 @@ class PlayerAwards:
     def trainModel(training_df):
         features = PlayerAwards.filterFeatures(training_df)
         target = PlayerAwards.filterTargets(training_df)
-        model = MultiOutputRegressor(NuSVR())
+        model = MultiOutputRegressor(GradientBoostingRegressor(
+            n_estimators=100,
+            learning_rate=0.1,
+            max_depth=4,
+            random_state=42,
+            subsample=0.8
+        ))
         model.fit(features, target)
         return model
 
@@ -152,16 +159,20 @@ class PlayerAwards:
         classification_df = self.convertRegressionToClassification(test_df, prediction)
         
         # Remove awards not given in the true_df
-        valid_awards_year = set(zip(true_df["award"], true_df["year"]))
+        player_answer = []
+        player_prediction = []
         for idx, row in classification_df.iterrows():
-            award_year = (row["award"], row["year"])
-            if award_year not in valid_awards_year:
-                classification_df = classification_df.drop(idx)
-        classification_df.reset_index(drop=True)
+            award = row["award"]
+            year = row["year"]
+            prediction = row["playerID"]
+            answer = true_df[(true_df["award"] == award) & (true_df["year"] == year)]["playerID"].values
+            if len(answer) == 1:
+                player_answer.append(answer[0])
+                player_prediction.append(prediction)
         
-        player_prediction = classification_df["playerID"]
-        player_results = true_df["playerID"]
-        print("Classification Report: \n", classification_report(player_results, player_prediction))
+        print(player_prediction)
+        print(player_answer)
+        print("Classification Report: \n", classification_report(player_answer, player_prediction))
 
 
 def main():

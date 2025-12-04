@@ -24,11 +24,11 @@ columns_to_remove = {
 columns_to_remove_redundancy = {
     "players_teams": [
     "rebounds", "threeAttempted", "PostRebounds",
-    "PostfgAttempted", "PostfgMade", "PostMinutes",
-    "PostthreeMade", "PostftMade",
+    "PostfgAttempted", "PostfgAttempted", "PostMinutes",
+    "PostthreeAttempted", "PostftAttempted",
     ],
     "teams": [
-    "d_fta", "o_3pa", "min", "d_fgm", "d_reb"
+    "d_fta", "o_3pa", "min", "d_fga", "d_reb"
     ],
 }
 
@@ -46,10 +46,8 @@ def clean_csv(name):
     file_path = os.path.join(RAW_FOLDER, f"{name}.csv")
     df = pd.read_csv(file_path)
 
-    # Drop specified columns (only if they exist)
     df = remove_columns(df, columns_to_remove, name);
 
-    # Filters
     if name == "players":
         df = df[
             df["pos"].notna() &
@@ -58,13 +56,10 @@ def clean_csv(name):
             (df["weight"] > 0)
         ]
 
-    # Save cleaned version
     save_version(df, CLEANED_FOLDER, name)
 
-    # Drop redundant columns
     df = remove_columns(df, columns_to_remove_redundancy, name)
 
-    # Save final version
     save_version(df, FINAL_FOLDER, name)
 
 def main():

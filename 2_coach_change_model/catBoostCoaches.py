@@ -11,7 +11,7 @@ class CoachesModel:
         self.players_df = players_df.copy()
 
         # CatBoost handles categorical features automatically, but they must be explicitly
-        self.categorical_cols = ["tmID", "lgID", "coachID"]
+        self.categorical_cols = ["tmID", "coachID"]
 
     # ==========================================================
     # FEATURE SELECTION
@@ -52,7 +52,7 @@ class CoachesModel:
 
         coaches = coaches[coaches["stint"].isin([0, 1])].copy()
 
-        protected = {"coachID", "tmID", "year", "lgID", "stint"}
+        protected = {"coachID", "tmID", "year", "stint"}
         common_cols = (set(coaches.columns).intersection(set(teams.columns))) - protected
 
         if common_cols:

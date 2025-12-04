@@ -18,7 +18,7 @@ class CoachesModel:
     # ==========================================================
     def filterFeatures(self, df):
         feature_cols = [
-            "tmID","coachID"
+            "tmID","coachID",
             "prev_coach_won","prev_coach_lost","prev_coach_post_wins","prev_coach_post_losses",
             "prev_team_won","prev_team_lost","prev_team_o_pts","prev_team_d_pts","prev_team_playoff",
             "prev_coach_win_pct","prev_coach_made_playoffs",

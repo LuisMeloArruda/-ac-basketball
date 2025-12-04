@@ -116,7 +116,6 @@ class TeamStats:
     def filterTargets(df):
         return df[
             [
-                "d_fga",
                 "d_ftm",
                 "d_3pm",
                 "d_3pa",
@@ -146,7 +145,6 @@ class TeamStats:
         df_def = pd.DataFrame(
             d_pred,
             columns=[
-                "d_fga",
                 "d_ftm",
                 "d_3pm",
                 "d_3pa",

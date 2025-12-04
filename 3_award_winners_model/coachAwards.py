@@ -88,6 +88,7 @@ class CoachAwards:
         )
 
         # Playoff depth (how far they went)
+        team_stats["playoff"] = team_stats["playoff"].fillna("L")
         team_stats["reached_finals"] = (team_stats["playoff"].str.contains("W")).astype(
             int
         )

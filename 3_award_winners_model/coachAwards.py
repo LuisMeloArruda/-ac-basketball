@@ -5,132 +5,134 @@ from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 
 
-class PlayerAwards:
+class CoachAwards:
     def __init__(self, data_path="../database/final/"):
         self.data_path = data_path
         self.models = {}
         self.scalers = {}
 
-        # Award categories
-        self.player_awards = [
-            "All-Star Game Most Valuable Player",
-            "Defensive Player of the Year",
-            "Kim Perrot Sportsmanship Award",
-            "Most Improved Player",
-            "Most Valuable Player",
-            "Rookie of the Year",
-            "Sixth Woman of the Year",
-            "WNBA Finals Most Valuable Player",
-        ]
+        # Award category
+        self.coach_awards = ["Coach of the Year"]
 
     def load_data(self):
         # print("Loading data...")
-        self.players_teams = pd.read_csv(f"{self.data_path}players_teams.csv")
-        self.players = pd.read_csv(f"{self.data_path}players.csv")
+        self.coaches = pd.read_csv(f"{self.data_path}coaches.csv")
         self.teams = pd.read_csv(f"{self.data_path}teams.csv")
         self.awards = pd.read_csv(f"{self.data_path}awards_players.csv")
 
-        self.awards = self.awards[self.awards["award"].isin(self.player_awards)]
+        self.awards = self.awards[self.awards["award"].isin(self.coach_awards)]
 
-        # print(f"Loaded {len(self.players_teams)} player-season records")
+        # print(f"Loaded {len(self.coaches)} coach-season records")
         # print(f"Loaded {len(self.awards)} award records")
 
-    def engineer_player_features(self, year=None):
+    def engineer_coach_features(self, year=None):
         """
-        - Current season stats (normalized per game)
-        - Team performance
-        - Previous year stats and performance delta
-        - League rankings
-        - Career stats
+        - Season record (wins, losses, win percentage)
+        - Playoff performance
+        - Team improvement metrics
+        - Conference performance
+        - Historical performance
         """
-        df = self.players_teams.copy()
+        df = self.coaches.copy()
 
         if year is not None:
             df = df[df["year"] == year]
 
-        # Merge with player bio data
-        df = df.merge(
-            self.players[["bioID", "pos", "height", "weight", "college"]],
-            left_on="playerID",
-            right_on="bioID",
-            how="left",
-        )
+        # Win percentage
+        df["win_pct"] = df["won"] / (df["won"] + df["lost"]).replace(0, 1)
 
-        # Per-game statistics
-        df["ppg"] = df["points"] / df["GP"].replace(0, 1)  # Points per game
-        df["rpg"] = (df["oRebounds"] + df["dRebounds"]) / df["GP"].replace(
-            0, 1
-        )  # Rebounds per game
-        df["apg"] = df["assists"] / df["GP"].replace(0, 1)  # Assists per game
-        df["spg"] = df["steals"] / df["GP"].replace(0, 1)  # Steals per game
-        df["bpg"] = df["blocks"] / df["GP"].replace(0, 1)  # Blocks per game
-        df["topg"] = df["turnovers"] / df["GP"].replace(0, 1)  # Turnovers per game
-        df["mpg"] = df["minutes"] / df["GP"].replace(0, 1)  # Minutes played per game
-
-        # Shooting percentages
-        df["fg_pct"] = df["fgMade"] / df["fgAttempted"].replace(
-            0, 1
-        )  # % of Field goald made
-        df["ft_pct"] = df["ftMade"] / df["ftAttempted"].replace(
-            0, 1
-        )  # % of Free throws made
-        df["three_per_game"] = df["threeMade"] / df["GP"].replace(
-            0, 1
-        )  # Nº of "three" type of points made per game
-
-        # Efficiency metrics
-        df["true_shooting"] = df["points"] / (
-            2 * (df["fgAttempted"] + 0.44 * df["ftAttempted"])
+        # Playoff metrics
+        df["post_win_pct"] = df["post_wins"] / (
+            df["post_wins"] + df["post_losses"]
         ).replace(0, 1)
-        df["assist_to_turnover"] = df["assists"] / df["turnovers"].replace(0, 1)
+        df["post_win_pct"] = df["post_win_pct"].fillna(0)
+        df["made_playoffs"] = ((df["post_wins"] + df["post_losses"]) > 0).astype(int)
+        df["total_post_games"] = df["post_wins"] + df["post_losses"]
 
-        # Games started ratio (indicator of importance)
-        df["gs_ratio"] = df["GS"] / df["GP"].replace(0, 1)
-
-        # Merge with team performance
+        # Merge with team stats for additional context
         team_stats = self.teams[
-            ["year", "tmID", "won", "lost", "playoff", "o_pts", "d_pts"]
+            [
+                "year",
+                "tmID",
+                "playoff",
+                "confW",
+                "confL",
+                "won",
+                "lost",
+                "o_pts",
+                "d_pts",
+                "homeW",
+                "homeL",
+                "awayW",
+                "awayL",
+            ]
         ].copy()
 
-        team_stats["win_pct"] = team_stats["won"] / (
+        team_stats["conf_win_pct"] = team_stats["confW"] / (
+            team_stats["confW"] + team_stats["confL"]
+        ).replace(0, 1)
+        team_stats["home_win_pct"] = team_stats["homeW"] / (
+            team_stats["homeW"] + team_stats["homeL"]
+        ).replace(0, 1)
+        team_stats["away_win_pct"] = team_stats["awayW"] / (
+            team_stats["awayW"] + team_stats["awayL"]
+        ).replace(0, 1)
+        team_stats["avg_pts_scored"] = team_stats["o_pts"] / (
             team_stats["won"] + team_stats["lost"]
-        )  # % of victories
+        )
+        team_stats["avg_pts_allowed"] = team_stats["d_pts"] / (
+            team_stats["won"] + team_stats["lost"]
+        )
+        team_stats["point_differential"] = (
+            team_stats["avg_pts_scored"] - team_stats["avg_pts_allowed"]
+        )
 
-        team_stats["playoff_binary"] = (team_stats["playoff"] != "N").astype(int)
+        # Playoff depth (how far they went)
+        team_stats["reached_finals"] = (team_stats["playoff"].str.contains("W")).astype(
+            int
+        )
+        team_stats["reached_semis"] = (team_stats["playoff"].str.len() >= 2).astype(int)
 
-        df = df.merge(team_stats, on=["year", "tmID"], how="left")
+        df = df.merge(
+            team_stats, on=["year", "tmID"], how="left", suffixes=("", "_team")
+        )
 
-        # League rankings for each year (percentile-based)
-        for stat in ["ppg", "rpg", "apg", "spg", "bpg", "fg_pct", "true_shooting"]:
-            if stat in df.columns:
-                df[f"{stat}_rank"] = df.groupby("year")[stat].rank(pct=True)
-
-        # Previous year stats
+        # Previous year stats for the same coach with same team
         df_prev = df.copy()
         df_prev["year"] = df_prev["year"] + 1
-        prev_cols = ["playerID", "year", "ppg", "rpg", "apg", "GP"]
+        prev_cols = ["coachID", "tmID", "year", "won", "win_pct", "made_playoffs"]
         df_prev = df_prev[prev_cols].rename(
             columns={
-                "ppg": "prev_ppg",
-                "rpg": "prev_rpg",
-                "apg": "prev_apg",
-                "GP": "prev_GP",
+                "won": "prev_won",
+                "win_pct": "prev_win_pct",
+                "made_playoffs": "prev_made_playoffs",
             }
         )
 
-        df = df.merge(df_prev, on=["playerID", "year"], how="left")
+        df = df.merge(df_prev, on=["coachID", "tmID", "year"], how="left")
 
-        # Improvement metrics
-        df["ppg_improvement"] = df["ppg"] - df["prev_ppg"].fillna(df["ppg"])
-        df["rpg_improvement"] = df["rpg"] - df["prev_rpg"].fillna(df["rpg"])
-        df["apg_improvement"] = df["apg"] - df["prev_apg"].fillna(df["apg"])
+        # Improvement metrics (key for Coach of the Year)
+        df["wins_improvement"] = df["won"] - df["prev_won"].fillna(0)
+        df["win_pct_improvement"] = df["win_pct"] - df["prev_win_pct"].fillna(0)
+        df["playoff_improvement"] = df["made_playoffs"] - df[
+            "prev_made_playoffs"
+        ].fillna(0)
 
-        # Rookie indicator (no previous year GP)
-        df["is_rookie"] = df["prev_GP"].isna().astype(int)
+        # New coach indicator (first year with team)
+        df["is_new_coach"] = df["prev_won"].isna().astype(int)
 
-        # Career years (count of previous seasons)
-        career_years = df.groupby("playerID")["year"].rank(method="dense") - 1
-        df["career_years"] = career_years
+        # League rankings for each year (percentile-based)
+        for stat in ["win_pct", "won", "conf_win_pct", "point_differential"]:
+            if stat in df.columns:
+                df[f"{stat}_rank"] = df.groupby("year")[stat].rank(pct=True)
+
+        # Career statistics with this team
+        df["years_with_team"] = df.groupby(["coachID", "tmID"])["year"].rank(
+            method="dense"
+        )
+
+        # Overall coaching experience
+        df["coaching_years"] = df.groupby("coachID")["year"].rank(method="dense")
 
         # Fill NaN values
         numeric_cols = df.select_dtypes(include=[np.number]).columns
@@ -139,8 +141,8 @@ class PlayerAwards:
         return df
 
     def create_training_data(self, award_name):
-        df = self.engineer_player_features()
-        id_col = "playerID"
+        df = self.engineer_coach_features()
+        id_col = "coachID"
 
         # Create labels
         award_winners = self.awards[self.awards["award"] == award_name]
@@ -148,7 +150,9 @@ class PlayerAwards:
             lambda row: 1
             if (
                 (award_winners["year"] == row["year"])
-                & (award_winners[id_col] == row[id_col])
+                & (
+                    award_winners["playerID"] == row[id_col]
+                )  # coachID stored as playerID in awards
             ).any()
             else 0,
             axis=1,
@@ -164,12 +168,9 @@ class PlayerAwards:
             "year",
             "won_award",
             "tmID",
-            "bioID",
-            "pos",
-            "college",
+            "lgID",
             "stint",
             "playoff",
-            "lgID",
         ]
 
         feature_cols = [
@@ -197,7 +198,6 @@ class PlayerAwards:
 
         # print(f"  Total samples: {len(X)}, Positive samples: {y.sum()}")
 
-        # Use all data for training since we want to predict the next year
         # Scale features
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
@@ -226,10 +226,10 @@ class PlayerAwards:
 
     def train_all_models(self):
         # print("=" * 60)
-        # print("Training Award Prediction Models")
+        # print("Training Coach Award Prediction Models")
         # print("=" * 60)
 
-        for award in self.player_awards:
+        for award in self.coach_awards:
             model, scaler = self.train_award_model(award)
             if model is not None:
                 self.models[award] = {
@@ -248,8 +248,8 @@ class PlayerAwards:
             model = model_info["model"]
             scaler = model_info["scaler"]
 
-            df = self.engineer_player_features(year=year)
-            id_col = "playerID"
+            df = self.engineer_coach_features(year=year)
+            id_col = "coachID"
 
             if len(df) == 0:
                 continue
@@ -273,12 +273,12 @@ class PlayerAwards:
                 {
                     "award": award_name,
                     "year": year,
-                    id_col: winner_id,
+                    "playerID": winner_id,  # Store as playerID to match awards format
                     "confidence": confidence,
                 }
             )
 
-            print(f"{award_name}: {winner_id} (confidence: {confidence:.3f})")
+            # print(f"{award_name}: {winner_id} (confidence: {confidence:.3f})")
 
         return pd.DataFrame(predictions)
 
@@ -294,7 +294,7 @@ class PlayerAwards:
         all_actuals = []
 
         for year in test_years:
-            # print(f"\nYear {year}:")
+            print(f"\nYear {year}:")
             predictions = self.predict_award_winners(year)
 
             # Compare with actual winners
@@ -305,7 +305,7 @@ class PlayerAwards:
                 actual = actual_awards[actual_awards["award"] == award]
 
                 if len(actual) > 0:
-                    pred_id = pred.get("playerID", pred.get("coachID"))
+                    pred_id = pred["playerID"]
                     actual_id = actual.iloc[0]["playerID"]
 
                     all_predictions.append(pred_id)
@@ -326,14 +326,12 @@ class PlayerAwards:
 
 
 def main():
-    predictor = PlayerAwards(data_path="../database/final/")
+    predictor = CoachAwards(data_path="../database/final/")
     predictor.load_data()
 
-    test_year = 10
+    test_year = 11
 
-    predictor.players_teams = predictor.players_teams[
-        predictor.players_teams["year"] < test_year
-    ]
+    predictor.coaches = predictor.coaches[predictor.coaches["year"] < test_year]
     predictor.teams = predictor.teams[predictor.teams["year"] < test_year]
     predictor.awards = predictor.awards[predictor.awards["year"] < test_year]
 

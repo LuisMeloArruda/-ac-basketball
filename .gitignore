@@ -12,4 +12,5 @@ __pycache__/
 
 # Project
 outputs/
-catboost_info
+catboost_info/
+*_debug/

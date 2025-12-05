@@ -254,8 +254,8 @@ class CoachesModel:
             preds = self.model.predict(X_test)
 
             # debug features input
-            self.writeDebugFeatures(X_test, test_year)
-
+            self.writeDebugFeatures(df_test_proc, test_year)
+            
             # prediction probabilities
             try:
                 probs_full = self.model.predict_proba(X_test)

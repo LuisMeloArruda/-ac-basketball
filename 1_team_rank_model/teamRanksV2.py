@@ -88,7 +88,7 @@ class TeamRank:
             "o_fgm","o_fga","o_ftm","o_fta","o_3pm",
             "o_oreb","o_dreb","o_reb",
             "o_asts","o_pf","o_stl","o_to","o_blk","o_pts",
-            "d_fga","d_ftm","d_3pm","d_3pa",
+            "d_fgm","d_ftm","d_3pm","d_3pa",
             "d_oreb","d_dreb","d_asts",
             "d_pf","d_stl","d_to","d_blk","d_pts",
             "won", "lost",

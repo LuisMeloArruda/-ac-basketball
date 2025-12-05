@@ -53,7 +53,7 @@ class TeamRanks:
                 "o_to",
                 "o_blk",
                 "o_pts",
-                "d_fga",
+                "d_fgm",
                 "d_ftm",
                 "d_3pm",
                 "d_3pa",

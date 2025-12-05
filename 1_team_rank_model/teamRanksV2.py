@@ -6,10 +6,6 @@ from sklearn.preprocessing import LabelEncoder
 
 class TeamRank:
     def __init__(self, teams_df):
-        """
-        Initialize the ranking model: copy the input dataframe,
-        split teams by conference, and create a global encoder for team IDs.
-        """
 
         self.teams_df = teams_df.copy()
         self.conferences = sorted(self.teams_df["confID"].unique())
@@ -24,10 +20,6 @@ class TeamRank:
 
 
     def filter_valid_tmids(self, df, df_conf, year):
-        """
-        Keep only team IDs that belong to the given conference and year.
-        Ensures that predictions align with the actual conference membership.
-        """
 
         valid = df_conf[df_conf["year"] == year]["tmID"].astype(str).unique()
         df["tmID"] = df["tmID"].astype(str)
@@ -35,11 +27,6 @@ class TeamRank:
 
 
     def buildFeaturesForYear(self, year, df_conf):
-        """
-        Load and combine OFFENSE, DEFENSE and WIN/LOSS prediction files
-        for a specific year, applying conference/year filtering and encoding.
-        Returns a dataframe of all features.
-        """
 
         off_path = f"../stats_models/teams_offense_predictions/offense_predictions_year_{year}.csv"
         if not os.path.exists(off_path):
@@ -63,23 +50,10 @@ class TeamRank:
 
         df = off_df.merge(def_df, on=["tmID", "tmID_enc", "year"], how="left")
 
-        wl_path = f"../stats_models/teams_wl_predictions/wl_predictions_year_{year}.csv"
-        if os.path.exists(wl_path):
-            wl_df = pd.read_csv(wl_path)
-            wl_df = self.filter_valid_tmids(wl_df, df_conf, year)
-            if not wl_df.empty:
-                wl_df["tmID_enc"] = self.encoder_tm.transform(wl_df["tmID"])
-                df = df.merge(wl_df, on=["tmID", "tmID_enc", "year"], how="left")
-
         return df
 
 
     def buildTrainingSet(self, years, df_conf):
-        """
-        Build the training dataset: select previous years, encode team IDs,
-        extract offensive, defensive, and win/loss features,
-        and return X, y and the feature column list.
-        """
 
         df = df_conf[df_conf["year"].isin(years)].copy()
         df["tmID_enc"] = self.encoder_tm.transform(df["tmID"].astype(str))
@@ -91,7 +65,6 @@ class TeamRank:
             "d_fgm","d_ftm","d_3pm","d_3pa",
             "d_oreb","d_dreb","d_asts",
             "d_pf","d_stl","d_to","d_blk","d_pts",
-            "won", "lost",
         ]
 
         X = df[feature_cols].copy()
@@ -100,10 +73,6 @@ class TeamRank:
 
 
     def trainModel(self, X, y):
-        """
-        Train a RandomForestRegressor to predict team rankings
-        using offensive, defensive and win/loss metrics.
-        """
 
         model = RandomForestRegressor(
             n_estimators=500,
@@ -115,11 +84,7 @@ class TeamRank:
 
 
     def run_conf_rank(self, conf_name, df_conf):
-        """
-        Perform walk-forward evaluation within a single conference:
-        train on past years, predict the next year, generate ranking
-        predictions and save the output files.
-        """
+
 
         years = sorted(df_conf["year"].unique())
         results = {}
@@ -158,10 +123,6 @@ class TeamRank:
 
 
     def walkForwardRank(self):
-        """
-        Run the ranking process for every conference
-        by applying walk-forward modeling individually to each one.
-        """
 
         for conf in self.conferences:
             df_conf = self.conf_groups[conf]
@@ -169,10 +130,6 @@ class TeamRank:
 
 
 def main():
-        """
-        Load the main team dataset, initialize TeamRank,
-        and execute the full walk-forward ranking pipeline.
-        """
 
         teams_df = pd.read_csv("../database/final/teams.csv")
         model = TeamRank(teams_df)

@@ -5,13 +5,6 @@ import pandas as pd
 
 class TeamWinLoss:
     def __init__(self, teams_df, N_years=3):
-        """
-        Initialize the Win/Loss prediction model:
-        - Store rolling-window length (N_years)
-        - Encode categorical team identifiers
-        - Compute temporal win features
-        - Train base model on full historical dataset
-        """
         self.N_years = N_years
         self.encoders = {}
         processed = self.preprocessTraining(teams_df)
@@ -21,14 +14,6 @@ class TeamWinLoss:
     # TRAINING PREPROCESSING
     # ==========================================================
     def preprocessTraining(self, df):
-        """
-        Preprocess the historical training dataset:
-        - Clean and normalize columns
-        - Encode categorical IDs (team, franchise, conference, arena)
-        - Compute career-year ordering for teams
-        - Compute previous-season wins and rolling-N-year win averages
-        - Extract input features X and target outputs Y
-        """
 
         from sklearn.preprocessing import LabelEncoder
 
@@ -58,17 +43,6 @@ class TeamWinLoss:
     # INPUT PREPROCESSING (for a test year)
     # ==========================================================
     def preprocessInput(self, test_year, predictions_folder="players_predictions", teams_def_folder="teams_predictions"):
-        """
-        Build feature matrix for test_year using multiple sources:
-        1. Predicted player stats → aggregated into team-level offense
-        2. Team categorical metadata for the same year
-        3. Predicted team defense (if available) or fallback to real defense
-        4. Historical win features (prev_won, rolling wins)
-        5. Re-encode all categorical fields using training encoders
-
-        Returns:
-            X_test — dataframe ready for model.predict()
-        """
 
         # 1) load predicted player stats
         players_csv = os.path.join(predictions_folder, f"predictions_year_{test_year}.csv")
@@ -196,18 +170,11 @@ class TeamWinLoss:
     # TEMPORAL FEATURES: prev_won and rollN_won
     # ==========================================================
     def computePrevWins(self, df):
-        """
-        Compute previous-season wins for each team, producing prev_won.
-        """
         df = df.sort_values(by=["tmID", "career_year"])
         df["prev_won"] = df.groupby("tmID")["won"].shift(1)
         return df
 
     def computeRollingWins(self, df, N=3):
-        """
-        Compute rolling N-year average of wins, using shift(1) to
-        prevent data leakage from the current season.
-        """
         df = df.sort_values(by=["tmID", "career_year"])
         df[f"roll{N}_won"] = (
             df.groupby("tmID")["won"]
@@ -223,12 +190,6 @@ class TeamWinLoss:
     # FEATURE / TARGET SELECTION
     # ==========================================================
     def filterFeatures(self, df):
-        """
-        Select input feature columns including:
-        - team identifiers and metadata
-        - offensive and defensive stats
-        - temporal win features (prev_won, rolling wins)
-        """
         base = [
             "tmID", "franchID", "confID", "year", "arena",
             "o_fgm", "o_fga", "o_ftm", "o_fta", "o_3pm",
@@ -245,20 +206,12 @@ class TeamWinLoss:
         return df[feature_cols]
 
     def filterTargets(self, df):
-        """
-        Return target variables for prediction:
-        - won (number of wins)
-        - lost (number of losses)
-        """
         return df[["won", "lost"]]
 
     # ==========================================================
     # MODEL TRAINING
     # ==========================================================
     def generateModel(self, X, Y):
-        """
-        Train a multi-output CatBoostRegressor to predict wins and losses.
-        """
 
         from catboost import CatBoostRegressor
         from sklearn.multioutput import MultiOutputRegressor
@@ -279,14 +232,6 @@ class TeamWinLoss:
     # WALK-FORWARD VALIDATION
     # ==========================================================
     def walkForwardWL(self, teams_df, predictions_folder="players_predictions", teams_def_folder="teams_predictions"):
-        """
-        Perform walk-forward validation over the historical seasons:
-        - Train on seasons < test_year
-        - Build X_test using predicted attack & predicted defense
-        - Predict wins/losses for test_year
-        - Save predictions and training debug snapshots
-        - Compute metrics (MAE, MSE, R²) per season
-        """
 
         from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
@@ -370,10 +315,6 @@ class TeamWinLoss:
 
 
 def main():
-    """
-    Load the historical teams dataset, initialize Win/Loss model,
-    and run full walk-forward evaluation pipeline.
-    """
 
     teams_df = pd.read_csv("../database/final/teams.csv")
     model = TeamWinLoss(teams_df, N_years=3)

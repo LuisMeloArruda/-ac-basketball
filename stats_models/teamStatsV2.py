@@ -4,13 +4,6 @@ import numpy as np
 
 class TeamStats:
     def __init__(self, teams_df):
-        """
-        Initialize the TeamStats model:
-        - Preprocess the input team dataframe
-        - Encode categorical columns
-        - Generate defensive temporal features
-        - Train initial defensive model
-        """
         self.encoders = {}
         processed = self.preprocessTraining(teams_df)
         self.model = self.generateModel(processed["X"], processed["Y"])
@@ -19,14 +12,6 @@ class TeamStats:
     # TRAINING PREPROCESSING
     # ==========================================================
     def preprocessTraining(self, df):
-        """
-        Full preprocessing pipeline for training:
-        - Encode categorical identifiers (team, franchise, conference, arena, name)
-        - Sort teams by season and assign career_year sequence
-        - Compute previous-year and rolling defensive features
-        - Select model features (X) and defensive targets (Y)
-        - Return processed data components
-        """
 
         from sklearn.preprocessing import LabelEncoder
 
@@ -51,25 +36,13 @@ class TeamStats:
         return {"X": X, "Y": Y, "df_full": df}
 
     # ==========================================================
-    # INPUT PREPROCESSING (PREDICTED PLAYER OFFENSE)
+    # INPUT PREPROCESSING
     # ==========================================================
     def preprocessInput(self, predicted_players_df):
-        """
-        Preprocess predicted player stats to build team-level OFFENSIVE input:
-        - Load historical player-team mapping for the same season
-        - Merge predicted stats with team assignments
-        - Aggregate all player stats per team
-        - Merge team metadata (franchID, confID, arena, name)
-        - Encode all categorical team attributes using fitted encoders
-        - Merge defensive temporal history (prev and rolling features)
-        - Return fully prepared feature matrix for inference
-        """
 
-        players_teams = pd.read_csv("../database/final/players_teams.csv")
         test_year = predicted_players_df["year"].iloc[0]
 
-        players_year = players_teams[players_teams["year"] == test_year][["playerID", "tmID"]]
-        merged = predicted_players_df.merge(players_year, on="playerID", how="left")
+        merged = predicted_players_df.copy()
 
         # Aggregate player OFFENSE → team offense
         agg = merged.groupby(["tmID", "year"]).agg({
@@ -166,7 +139,7 @@ class TeamStats:
         else:
             # If no history exists, fill temporal features with NaN
             temp_example = [
-                "d_fga", "d_ftm", "d_3pm", "d_3pa",
+                "d_fgm", "d_ftm", "d_3pm", "d_3pa",
                 "d_oreb", "d_dreb", "d_asts",
                 "d_pf", "d_stl", "d_to", "d_blk", "d_pts"
             ]
@@ -180,13 +153,9 @@ class TeamStats:
     # TEMPORAL FEATURE ENGINEERING FOR TEAM DEFENSE
     # ==========================================================
     def computePrevDefense(self, df):
-        """
-        Compute previous-season defensive statistics for each team.
-        Creates prev_X columns using career_year ordering.
-        """
 
         defensive_cols = [
-            "d_fga", "d_ftm", "d_3pm", "d_3pa",
+            "d_fgm", "d_ftm", "d_3pm", "d_3pa",
             "d_oreb", "d_dreb", "d_asts",
             "d_pf", "d_stl", "d_to", "d_blk", "d_pts"
         ]
@@ -205,7 +174,7 @@ class TeamStats:
         """
 
         defensive_cols = [
-            "d_fga", "d_ftm", "d_3pm", "d_3pa",
+            "d_fgm", "d_ftm", "d_3pm", "d_3pa",
             "d_oreb", "d_dreb", "d_asts",
             "d_pf", "d_stl", "d_to", "d_blk", "d_pts"
         ]
@@ -229,12 +198,7 @@ class TeamStats:
     # FEATURE / TARGET SELECTION
     # ==========================================================
     def filterFeatures(self, df):
-        """
-        Select team-level model input features:
-        - Team identifiers and encoded metadata
-        - Offensive totals aggregated from predicted players
-        - Previous/rolling defensive features
-        """
+
         feature_cols = [
             "tmID", "franchID", "confID", "year", "arena", "name",
             "o_fgm", "o_fga", "o_ftm", "o_fta", "o_3pm",
@@ -248,11 +212,8 @@ class TeamStats:
         return df[feature_cols]
 
     def filterTargets(self, df):
-        """
-        Select defensive statistical targets to predict for each team.
-        """
         target_cols = [
-            "d_fga", "d_ftm", "d_3pm", "d_3pa",
+            "d_fgm", "d_ftm", "d_3pm", "d_3pa",
             "d_oreb", "d_dreb", "d_asts",
             "d_pf", "d_stl", "d_to", "d_blk", "d_pts"
         ]
@@ -262,10 +223,6 @@ class TeamStats:
     # MODEL TRAINING
     # ==========================================================
     def generateModel(self, X, Y):
-        """
-        Train a MultiOutputRegressor using CatBoostRegressor
-        to simultaneously predict all defensive statistics.
-        """
 
         from catboost import CatBoostRegressor
         from sklearn.multioutput import MultiOutputRegressor
@@ -286,15 +243,6 @@ class TeamStats:
     # WALK-FORWARD VALIDATION FOR TEAM DEFENSIVE MODEL
     # ==========================================================
     def walkForwardTeams(self, teams_df, predictions_folder="players_predictions"):
-        """
-        Perform walk-forward validation of the team defensive model:
-        - Train model on seasons before test_year
-        - Load predicted player statistics for test_year
-        - Aggregate player predictions into team offense inputs
-        - Predict team defensive performance
-        - Save predictions and debug files
-        - Compute MAE, MSE, and R² for each year
-        """
 
         from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
         import os
@@ -307,9 +255,7 @@ class TeamStats:
             test_year = years[i]
             train_years = years[:i]
 
-            # ------------------------------
             # 1) TRAIN TEAM MODEL
-            # ------------------------------
             train_df = teams_df[teams_df["year"].isin(train_years)].copy()
             processed = self.preprocessTraining(train_df)
 
@@ -334,9 +280,7 @@ class TeamStats:
             sample.to_string(open(debug_path, "w"), index=False)
             print(f"[DEBUG] Training features saved to {debug_path}")
 
-            # ------------------------------
             # 2) LOAD PLAYER PREDICTED STATS
-            # ------------------------------
             csv_path = os.path.join(predictions_folder, f"predictions_year_{test_year}.csv")
 
             if not os.path.exists(csv_path):
@@ -349,9 +293,7 @@ class TeamStats:
                 print(f"[WARNING] Empty prediction file: {csv_path} — skipping year.")
                 continue
 
-            # ------------------------------
             # 3) AGGREGATE PLAYER → TEAM OFFENSE
-            # ------------------------------
             agg_offense = self.preprocessInput(pred_players)
 
             # Save offensive aggregation
@@ -370,9 +312,7 @@ class TeamStats:
 
             X_test = agg_offense
 
-            # ------------------------------
             # 4) PREDICT TEAM DEFENSE
-            # ------------------------------
             preds = self.model.predict(X_test)
 
             pred_df = pd.DataFrame(preds, columns=self.filterTargets(train_df).columns)
@@ -387,13 +327,11 @@ class TeamStats:
                 pass
 
             os.makedirs("teams_defense_predictions", exist_ok=True)
-            out_path = f"teams_predictions/defense_predictions_year_{test_year}.csv"
+            out_path = f"teams_defense_predictions/defense_predictions_year_{test_year}.csv"
             pred_df.to_csv(out_path, index=False)
             print(f"[DEBUG] Team defense predictions saved to {out_path}")
 
-            # ------------------------------
             # 5) COMPUTE METRICS
-            # ------------------------------
             real_df = teams_df[teams_df["year"] == test_year].copy()
             real_df = real_df.sort_values(by="tmID").reset_index(drop=True)
 
@@ -410,20 +348,13 @@ class TeamStats:
 
             print(f"[OK] Year {test_year} → MAE={mae:.2f}, MSE={mse:.2f}, R²= {r2:.3f}")
 
-        # ------------------------------
         # SUMMARY
-        # ------------------------------
         print("\n===== TEAM DEFENSE YEARLY METRICS =====")
         for y, m in results_by_year.items():
             print(f"Year {y}: MAE={m['mae']:.2f} | MSE={m['mse']:.2f} | R²= {m['r2']:.3f}")
 
 
 def main():
-    """
-    Load historical team dataset, create the TeamStats model,
-    and run walk-forward validation using player prediction CSVs.
-    """
-
     teams_df = pd.read_csv("../database/final/teams.csv")
     model = TeamStats(teams_df)
 

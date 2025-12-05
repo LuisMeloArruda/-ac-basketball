@@ -72,20 +72,6 @@ class PlayerStats:
         return df
 
     # ==========================================================
-    # FEATURE ENGINEERING
-    # ==========================================================
-    def computeFeatures(self, df):
-        df = self.computeAge(df)
-        df = df.sort_values(by=["playerID", "year"]).reset_index(drop=True)
-
-        df["career_year"] = df.groupby("playerID").cumcount()
-
-        df = self.computePrevStats(df)
-        df = self.computeRollingStats(df)
-        
-        return df
-
-    # ==========================================================
     # ENCODING
     # ==========================================================
     def encodeCategoricals(self, df, fit=True):
@@ -119,8 +105,19 @@ class PlayerStats:
         return df
 
     # ==========================================================
-    # TEMPORAL FEATURE ENGINEERING
+    # FEATURE ENGINEERING
     # ==========================================================
+    def computeFeatures(self, df):
+        df = self.computeAge(df)
+        df = df.sort_values(by=["playerID", "year"]).reset_index(drop=True)
+
+        df["career_year"] = df.groupby("playerID").cumcount()
+
+        df = self.computePrevStats(df)
+        df = self.computeRollingStats(df)
+        
+        return df
+
     def computeAge(self, df, current_year=2025):
 
         df["birthDate"] = pd.to_datetime(df["birthDate"], errors='coerce')
@@ -219,7 +216,7 @@ class PlayerStats:
         results_by_year = {}
         years = sorted(self.players_team_df["year"].unique())
 
-        for i in range(9, len(years)):
+        for i in range(1, len(years)):
             train_years = years[:i]
             test_year = years[i]
 

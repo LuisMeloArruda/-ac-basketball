@@ -39,14 +39,14 @@ def main():
                 training_df = pd.read_csv(training_file)
                 test_df = pd.read_csv(matching_test_file)
                 merged_df = pd.concat([training_df, test_df], ignore_index=True)
-                merged_df.to_csv(merged_path)
+                merged_df.to_csv(merged_path, index=False)
             except Exception as e:
                 raise RuntimeError(
                     f"Failed to merge '{training_file}' and '{matching_test_file}': {e}"
                 )
         else:
             training_df = pd.read_csv(training_file)
-            merged_df = training_df.to_csv(merged_path)
+            merged_df = training_df.to_csv(merged_path, index=False)
 
 if __name__ == "__main__":
     main()

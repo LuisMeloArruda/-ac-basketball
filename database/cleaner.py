@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-RAW_FOLDER = "./raw/"
+RAW_FOLDER = "./merged/"
 CLEANED_FOLDER = "./cleaned/"
 FINAL_FOLDER = "./final/"
 os.makedirs(CLEANED_FOLDER, exist_ok=True)

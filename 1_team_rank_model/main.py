@@ -2,6 +2,7 @@ import os
 from threading import Thread
 
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 from playerStats import PlayerStats
 from sklearn.metrics import classification_report
 from teamRanks import TeamRanks
@@ -30,8 +31,9 @@ def player_stats(input_df, test_years):
 def team_stats(input_df, test_years):
     # if not os.path.exists("outputs/predicted_team_stats.csv"):
         training_df = pd.read_csv("../database/final/teams.csv")
+        team_encoder = LabelEncoder().fit(training_df["tmID"].astype(str))
         training_df = training_df[~training_df["year"].isin(test_years)]
-        ts_model = TeamStats(training_df)
+        ts_model = TeamStats(training_df, team_encoder)
         print(test_years, "TeamStats model trained!")
     
         ts_input = ts_model.preprocessInput(input_df)
@@ -114,11 +116,25 @@ def test(player_df, team_df):
     print(classification_report(actual, predictions))
 
 
+def predict(player_df, team_df, year):
+    test_years = [year]
+    
+    this_player_df = player_df[["playerID", "year", "tmID", "stint"]]
+    this_player_df = this_player_df[this_player_df["year"].isin(test_years)]
+    this_player_df = this_player_df.reset_index(drop=True)
+    
+    this_team_df = team_df[["year", "tmID", "confID"]]
+    this_team_df = this_team_df[this_team_df["year"].isin(test_years)]
+    this_team_df = this_team_df.reset_index(drop=True)
+
+    return generate_results(this_player_df, this_team_df, test_years)
+    
+
 def main():
     player_df = pd.read_csv("../database/final/players_teams.csv")
     team_df = pd.read_csv("../database/final/teams.csv")
-    test(player_df, team_df)
-
+    prediction = predict(player_df, team_df, 11)
+    print(prediction)
 
 if __name__ == "__main__":
     main()

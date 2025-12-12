@@ -10,17 +10,15 @@ from sklearn.preprocessing import LabelEncoder
 
 
 class TeamStats:
-    def __init__(self, training_df):
-        self.encoders = {}
+    def __init__(self, training_df, team_encoder):
+        self.encoders = {"tmID": team_encoder}
         training_df = self.preprocessTraining(training_df)
         model = TeamStats.trainModel(training_df)
         self.model = model
 
     def preprocessTraining(self, training_df):
         df = training_df.copy()
-        le = LabelEncoder()
-        df["tmID"] = le.fit_transform(df["tmID"].astype(str))
-        self.encoders = {"tmID": le}
+        df["tmID"] = self.encoders["tmID"].transform(df["tmID"].astype(str))
         return df
 
     def preprocessInput(self, input_df):
@@ -232,7 +230,8 @@ def main():
 
     training_test_mask = df["year"].isin(test_years)
     training_df = df[~training_test_mask]
-    model = TeamStats(training_df)
+    team_encoder = LabelEncoder().fit(training_df["tmID"].astype(str))
+    model = TeamStats(training_df, team_encoder)
 
     input_df = model.preprocessInput(input_df)
     input_test_mask = input_df["year"].isin(test_years)

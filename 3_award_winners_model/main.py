@@ -10,7 +10,7 @@ from teamStats import TeamStats
 
 def main():
     data_path = "../database/final/"
-    test_year = 10
+    test_year = 11
     training_years = list(range(1, test_year))
 
     # 1. Load data
@@ -37,7 +37,8 @@ def main():
     player_encoders = PlayerStats.generateEncoders(players_teams_full)
     player_stats_model = PlayerStats(players_teams_train, player_encoders)
 
-    team_stats_model = TeamStats(teams_train)
+    team_encoder = LabelEncoder().fit(teams_full["tmID"].astype(str))
+    team_stats_model = TeamStats(teams_train, team_encoder)
 
     coach_encoder = LabelEncoder().fit(coaches_full["coachID"])
     team_encoder = LabelEncoder().fit(coaches_full["tmID"])
@@ -66,7 +67,7 @@ def main():
     team_award_model.awards = awards_train
     team_award_model.train_all_models()
 
-    # 5. Prepare Year 10 Input Data
+    # 5. Prepare Input Data
     players_roster_10 = players_teams_full[players_teams_full["year"] == test_year][
         ["playerID", "year", "tmID", "stint"]
     ].copy()
